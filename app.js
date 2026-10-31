@@ -402,9 +402,6 @@ function renderNavigationAndCards() {
     const spec = tab.dataset.specialty;
     const isActive = !state.searchQuery && spec === state.activeSpecialty;
     tab.classList.toggle('active', isActive);
-    if (isActive) {
-      tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
   });
 
   // 2. Get matching cards
@@ -417,7 +414,7 @@ function renderNavigationAndCards() {
   const toolTabsBar = document.getElementById('toolTabsBar');
   if (toolTabsBar) {
     if (matching.length === 0) {
-      toolTabsBar.innerHTML = `<span style="font-size:0.82rem;color:var(--text-muted);padding:0.2rem 0;">Aucun outil ne correspond à votre recherche.</span>`;
+      toolTabsBar.innerHTML = `<span style="font-size:0.78rem;color:var(--text-muted);padding:0.15rem 0;">Aucun outil trouvé.</span>`;
     } else {
       toolTabsBar.innerHTML = matching.map(card => {
         const shortTitle = card.getAttribute('data-short-title') || card.querySelector('.calc-title')?.textContent;
@@ -430,12 +427,6 @@ function renderNavigationAndCards() {
           </button>
         `;
       }).join('');
-
-      // Ensure active tool tab is scrolled into horizontal view
-      const activeTabEl = document.getElementById(`tab-${state.activeCardId}`);
-      if (activeTabEl) {
-        activeTabEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
     }
   }
 

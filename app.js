@@ -1,84 +1,70 @@
 // TomatoCalc — Moteur de Calcul Médical, Scores Cliniques & Classifications
-// Optimisé pour la lisibilité clinique et l'ergonomie mobile (iOS / Android)
+// Navigation "Zéro Défilement" : 1 outil actif à l'écran + barre d'onglets fixe permanente
 
 const SPECIALTIES = {
   all: {
     id: 'all',
-    name: 'Toutes les spécialités',
-    shortName: 'Toutes',
+    name: 'Tous les outils',
+    shortName: 'Tous',
     icon: '🍅',
-    color: 'var(--tomato-500)',
-    bg: 'var(--tomato-50)',
-    border: 'var(--tomato-100)',
-    description: 'Calculateurs biologiques, scores pronostiques et classifications médicales de référence.'
+    color: 'var(--tomato-500)'
   },
   cardio: {
     id: 'cardio',
     name: 'Cardiologie',
     shortName: 'Cardio',
     icon: '❤️',
-    color: 'var(--cardio-color)',
-    bg: 'var(--cardio-bg)',
-    border: 'var(--cardio-border)',
-    description: 'CHA₂DS₂-VASc, HAS-BLED, QT corrigé (Bazett / Fridericia), Wells EP, PAM & classifications HTA / NYHA.'
+    color: 'var(--cardio-color)'
   },
   nephro: {
     id: 'nephro',
     name: 'Néphrologie',
     shortName: 'Néphro',
     icon: '🫘',
-    color: 'var(--nephro-color)',
-    bg: 'var(--nephro-bg)',
-    border: 'var(--nephro-border)',
-    description: 'Clairance Cockcroft-Gault, DFG (CKD-EPI & MDRD), FE Na, FE Urée et classifications KDIGO (IRC & IRA).'
+    color: 'var(--nephro-color)'
   },
   nutrition: {
     id: 'nutrition',
     name: 'Nutrition',
     shortName: 'Nutrition',
     icon: '🍏',
-    color: 'var(--nutri-color)',
-    bg: 'var(--nutri-bg)',
-    border: 'var(--nutri-border)',
-    description: 'IMC & classification OMS, Poids idéal (Lorentz & Devine), NRI (Buzby) et besoins caloriques (Harris-Benedict).'
+    color: 'var(--nutri-color)'
   },
   medint: {
     id: 'medint',
     name: 'Médecine interne',
     shortName: 'Méd. Interne',
     icon: '🧬',
-    color: 'var(--medint-color)',
-    bg: 'var(--medint-bg)',
-    border: 'var(--medint-border)',
-    description: 'Calcémie corrigée, Trou anionique (Figge), Natrémie corrigée (Katz), Osmolarité et score de Child-Pugh.'
+    color: 'var(--medint-color)'
   },
   pediatrie: {
     id: 'pediatrie',
     name: 'Pédiatrie',
     shortName: 'Pédiatrie',
     icon: '🧸',
-    color: 'var(--ped-color)',
-    bg: 'var(--ped-bg)',
-    border: 'var(--ped-border)',
-    description: 'DFG Schwartz (2009) & normes par âge, besoins hydriques de Holliday-Segar (4-2-1), Apgar et constantes.'
+    color: 'var(--ped-color)'
   },
   reanima: {
     id: 'reanima',
     name: 'Réanimation & Urgences',
     shortName: 'Réa / Urg',
     icon: '⚡',
-    color: 'var(--rea-color)',
-    bg: 'var(--rea-bg)',
-    border: 'var(--rea-border)',
-    description: 'Rapport PaO₂/FiO₂ & classification de Berlin du SDRA, Score de Glasgow (GCS), qSOFA et CURB-65.'
+    color: 'var(--rea-color)'
+  },
+  fav: {
+    id: 'fav',
+    name: 'Outils Favoris',
+    shortName: 'Favoris',
+    icon: '★',
+    color: '#d97706'
   }
 };
 
 const state = {
-  activeSpecialty: 'all',
-  activeType: 'all',
+  activeSpecialty: 'cardio', // Start directly on Cardio or user's last specialty
+  activeCardId: 'card-cardio-chad',
+  viewMode: 'single', // 'single' (zero-scroll, 1 tool at a time) | 'grid' (all tools)
   searchQuery: '',
-  allCollapsed: false,
   favorites: JSON.parse(localStorage.getItem('tomatocalc_favs') || '["nephro-dfg", "cardio-chad", "cardio-qtc", "rea-pf"]'),
   clipboard: [],
   patient: {
@@ -104,10 +90,7 @@ function toggleFavorite(id) {
   }
   saveFavorites();
   updateFavoriteButtons();
-  updateCounts();
-  if (state.activeType === 'fav') {
-    applyFilters();
-  }
+  renderNavigationAndCards();
 }
 
 function updateFavoriteButtons() {
@@ -117,6 +100,9 @@ function updateFavoriteButtons() {
     btn.classList.toggle('active', isFav);
     btn.innerHTML = isFav ? '★' : '☆';
     btn.title = isFav ? 'Retirer des favoris' : 'Ajouter aux favoris';
+  });
+  document.querySelectorAll('.fav-counter').forEach(el => {
+    el.textContent = state.favorites.length;
   });
 }
 
@@ -128,11 +114,11 @@ function showToast(msg) {
   clearTimeout(window.__toastTimer);
   window.__toastTimer = setTimeout(() => {
     toast.classList.remove('show');
-  }, 2400);
+  }, 2200);
 }
 
 // ============================================================================
-// CLIPBOARD & MOBILE SHEET
+// CLIPBOARD & BOTTOM SHEETS
 // ============================================================================
 function addToClipboard(title, value, interpretation) {
   const existingIdx = state.clipboard.findIndex(item => item.title === title);
@@ -192,14 +178,14 @@ function copyAllClipboard() {
 }
 
 function renderClipboard() {
-  const emptyHtml = `<div class="clipboard-empty">Appuyez sur « 📋 Copier » sous un résultat pour l'ajouter à votre synthèse clinique.</div>`;
+  const emptyHtml = `<div class="clipboard-empty">Appuyez sur « 📋 Copier » sous un résultat pour l'épingler ici.</div>`;
   const itemsHtml = state.clipboard.map(item => `
     <div class="clipboard-item">
       <div class="clipboard-item-header">
         <span>${item.title}</span>
         <span class="clipboard-item-val">${item.value}</span>
       </div>
-      ${item.interpretation ? `<div style="color:var(--text-muted);font-size:0.76rem;">${item.interpretation}</div>` : ''}
+      ${item.interpretation ? `<div style="color:var(--text-muted);font-size:0.75rem;">${item.interpretation}</div>` : ''}
     </div>
   `).join('');
 
@@ -220,8 +206,16 @@ function toggleMobileClipboard(open) {
   sheet.classList.toggle('open', shouldOpen);
 }
 
+function toggleAllToolsDrawer(open) {
+  const sheet = document.getElementById('allToolsSheet');
+  if (!sheet) return;
+  const shouldOpen = open !== undefined ? open : !sheet.classList.contains('open');
+  if (shouldOpen) renderAllToolsDrawer();
+  sheet.classList.toggle('open', shouldOpen);
+}
+
 // ============================================================================
-// PATIENT BAR SYNCHRONIZATION & MOBILE ACCORDION
+// PATIENT BAR SYNCHRONIZATION
 // ============================================================================
 function togglePatientBar() {
   const bar = document.getElementById('patientBarSection');
@@ -238,7 +232,7 @@ function updatePatientSummaryBadge() {
   if (p.creat) parts.push(`Créat ${p.creat}`);
   const summaryEl = document.getElementById('patientCompactSummary');
   if (summaryEl) {
-    summaryEl.textContent = parts.length > 0 ? `(${p.sexe} • ${parts.join(' • ')})` : '(Pré-remplissage rapide)';
+    summaryEl.textContent = parts.length > 0 ? `(${p.sexe} • ${parts.join(' • ')})` : '(Appuyer pour pré-remplir âge, poids, créat...)';
   }
 }
 
@@ -326,62 +320,221 @@ function clearPatientContext() {
 }
 
 // ============================================================================
-// CARD COLLAPSE / EXPAND & QUICK JUMP
+// ZERO-SCROLL NAVIGATION ENGINE (Specialty Tabs + Persistent Tool Tabs)
 // ============================================================================
-function toggleCardCollapse(cardId) {
-  const card = document.getElementById(cardId);
-  if (!card) return;
-  const isCollapsed = card.classList.toggle('collapsed');
-  const btn = card.querySelector('.btn-collapse-card');
-  if (btn) {
-    btn.innerHTML = isCollapsed ? '➕' : '➖';
-    btn.title = isCollapsed ? 'Déplier cet outil' : 'Réduire cet outil';
-  }
+function getMatchingCards() {
+  const q = state.searchQuery.trim().toLowerCase();
+  const allCards = Array.from(document.querySelectorAll('.calc-card'));
+
+  return allCards.filter(card => {
+    const spec = card.dataset.specialty;
+    const favId = card.id.replace('card-', '');
+    const searchText = (card.dataset.keywords + ' ' + card.getAttribute('data-short-title') + ' ' + card.textContent).toLowerCase();
+
+    if (q) {
+      return searchText.includes(q);
+    }
+    if (state.activeSpecialty === 'all') return true;
+    if (state.activeSpecialty === 'fav') return state.favorites.includes(favId);
+    return spec === state.activeSpecialty;
+  });
 }
 
-function toggleCollapseAllCards() {
-  state.allCollapsed = !state.allCollapsed;
-  document.querySelectorAll('.calc-card').forEach(card => {
-    card.classList.toggle('collapsed', state.allCollapsed);
-    const btn = card.querySelector('.btn-collapse-card');
-    if (btn) {
-      btn.innerHTML = state.allCollapsed ? '➕' : '➖';
+function selectSpecialty(specId) {
+  state.activeSpecialty = specId;
+  state.searchQuery = '';
+  const searchInput = document.getElementById('globalSearchInput');
+  if (searchInput) searchInput.value = '';
+
+  const matching = getMatchingCards();
+  if (matching.length > 0) {
+    // Keep current card if it belongs to this specialty, otherwise pick the first one
+    const stillInList = matching.some(c => c.id === state.activeCardId);
+    if (!stillInList) {
+      state.activeCardId = matching[0].id;
+    }
+  }
+  renderNavigationAndCards();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function selectTool(cardId, switchSpecIfNeeded = false) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  state.activeCardId = cardId;
+
+  if (switchSpecIfNeeded) {
+    state.activeSpecialty = card.dataset.specialty;
+    state.searchQuery = '';
+    const searchInput = document.getElementById('globalSearchInput');
+    if (searchInput) searchInput.value = '';
+  }
+
+  renderNavigationAndCards();
+  toggleAllToolsDrawer(false);
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function stepTool(direction) {
+  const matching = getMatchingCards();
+  if (matching.length <= 1) return;
+  const idx = matching.findIndex(c => c.id === state.activeCardId);
+  const nextIdx = (idx + direction + matching.length) % matching.length;
+  selectTool(matching[nextIdx].id);
+}
+
+function toggleViewMode() {
+  state.viewMode = state.viewMode === 'single' ? 'grid' : 'single';
+  const btn = document.getElementById('btnViewModeToggle');
+  if (btn) {
+    btn.classList.toggle('active-mode', state.viewMode === 'grid');
+    btn.innerHTML = state.viewMode === 'single'
+      ? '🗂️ <span class="hide-mobile">Vue Grille</span>'
+      : '🎯 <span class="hide-mobile">Mode 1 Outil</span>';
+  }
+  renderNavigationAndCards();
+  showToast(state.viewMode === 'single' ? '🎯 Mode 1 outil à la fois (sans défilement)' : '🗂️ Vue Grille complète activée');
+}
+
+function renderNavigationAndCards() {
+  // 1. Update Specialty Tabs
+  document.querySelectorAll('.spec-tab').forEach(tab => {
+    const spec = tab.dataset.specialty;
+    const isActive = !state.searchQuery && spec === state.activeSpecialty;
+    tab.classList.toggle('active', isActive);
+    if (isActive) {
+      tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
   });
-  const toggleBtn = document.getElementById('btnMobileToggleCollapse');
-  if (toggleBtn) {
-    toggleBtn.innerHTML = state.allCollapsed ? '↕️ Déplier' : '↕️ Réduire';
+
+  // 2. Get matching cards
+  const matching = getMatchingCards();
+  if (matching.length > 0 && !matching.some(c => c.id === state.activeCardId)) {
+    state.activeCardId = matching[0].id;
   }
-  showToast(state.allCollapsed ? 'Vue compacte activée (touchez un titre pour ouvrir)' : 'Tous les outils sont dépliés');
+
+  // 3. Render Sticky Top Tool Tabs (#toolTabsBar)
+  const toolTabsBar = document.getElementById('toolTabsBar');
+  if (toolTabsBar) {
+    if (matching.length === 0) {
+      toolTabsBar.innerHTML = `<span style="font-size:0.82rem;color:var(--text-muted);padding:0.2rem 0;">Aucun outil ne correspond à votre recherche.</span>`;
+    } else {
+      toolTabsBar.innerHTML = matching.map(card => {
+        const shortTitle = card.getAttribute('data-short-title') || card.querySelector('.calc-title')?.textContent;
+        const specInfo = SPECIALTIES[card.dataset.specialty] || SPECIALTIES.all;
+        const isActive = state.viewMode === 'single' && card.id === state.activeCardId;
+        return `
+          <button type="button" class="tool-tab-btn ${isActive ? 'active' : ''}" id="tab-${card.id}" onclick="selectTool('${card.id}')">
+            <span class="tool-tab-dot" style="background:${specInfo.color}"></span>
+            <span>${shortTitle}</span>
+          </button>
+        `;
+      }).join('');
+
+      // Ensure active tool tab is scrolled into horizontal view
+      const activeTabEl = document.getElementById(`tab-${state.activeCardId}`);
+      if (activeTabEl) {
+        activeTabEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+  }
+
+  // 4. Render Desktop Left Sidebar Tool List (#sidebarToolsList)
+  const sidebarList = document.getElementById('sidebarToolsList');
+  const sidebarTitle = document.getElementById('sidebarSpecTitle');
+  if (sidebarTitle) {
+    const specObj = SPECIALTIES[state.activeSpecialty] || SPECIALTIES.all;
+    sidebarTitle.innerHTML = state.searchQuery
+      ? `<span>🔎 Résultats (${matching.length})</span>`
+      : `<span>${specObj.icon} ${specObj.name} (${matching.length})</span>`;
+  }
+  if (sidebarList) {
+    sidebarList.innerHTML = matching.map(card => {
+      const shortTitle = card.getAttribute('data-short-title') || card.querySelector('.calc-title')?.textContent;
+      const specInfo = SPECIALTIES[card.dataset.specialty] || SPECIALTIES.all;
+      const isActive = state.viewMode === 'single' && card.id === state.activeCardId;
+      return `
+        <button type="button" class="sidebar-tool-item ${isActive ? 'active' : ''}" onclick="selectTool('${card.id}')">
+          <span class="sidebar-tool-left">
+            <span class="tool-tab-dot" style="background:${specInfo.color}"></span>
+            <span class="name">${shortTitle}</span>
+          </span>
+          <span>›</span>
+        </button>
+      `;
+    }).join('');
+  }
+
+  // 5. Show ONLY the active card in 'single' mode (or all matching in 'grid' mode)
+  const gridContainer = document.getElementById('calculatorsGrid');
+  if (gridContainer) {
+    gridContainer.classList.toggle('mode-grid', state.viewMode === 'grid');
+  }
+
+  const allCards = Array.from(document.querySelectorAll('.calc-card'));
+  allCards.forEach(card => {
+    const isMatched = matching.includes(card);
+    if (!isMatched) {
+      card.style.display = 'none';
+    } else if (state.viewMode === 'single') {
+      card.style.display = card.id === state.activeCardId ? 'flex' : 'none';
+    } else {
+      card.style.display = 'flex';
+    }
+  });
+
+  // 6. Update Active Tool Counter / Drawer Button text
+  const activeIdx = matching.findIndex(c => c.id === state.activeCardId);
+  const currentCard = document.getElementById(state.activeCardId);
+  const currentShortTitle = currentCard ? currentCard.getAttribute('data-short-title') : 'Choisir un calcul';
+
+  const drawerBtnText = document.getElementById('drawerBtnText');
+  if (drawerBtnText) {
+    drawerBtnText.textContent = matching.length > 0
+      ? `🧭 ${currentShortTitle} (${activeIdx + 1}/${matching.length})`
+      : `🧭 Tous les calculs`;
+  }
+
+  const mobileDrawerBtnText = document.getElementById('mobileDrawerBtnText');
+  if (mobileDrawerBtnText) {
+    mobileDrawerBtnText.textContent = matching.length > 0
+      ? `🧭 Calculs (${activeIdx + 1}/${matching.length})`
+      : `🧭 Calculs`;
+  }
+
+  const emptyState = document.getElementById('emptySearchState');
+  if (emptyState) {
+    emptyState.style.display = matching.length === 0 ? 'block' : 'none';
+  }
 }
 
-function jumpToCard(cardId) {
-  const card = document.getElementById(cardId);
-  if (!card) return;
-  if (card.classList.contains('collapsed')) {
-    card.classList.remove('collapsed');
-    const btn = card.querySelector('.btn-collapse-card');
-    if (btn) btn.innerHTML = '➖';
-  }
-  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  card.classList.add('highlight-pulse');
-  setTimeout(() => card.classList.remove('highlight-pulse'), 1800);
-}
-
-function updateQuickJumpBar() {
-  const container = document.getElementById('quickJumpBar');
+function renderAllToolsDrawer() {
+  const container = document.getElementById('allToolsDrawerContent');
   if (!container) return;
-  const visibleCards = Array.from(document.querySelectorAll('.calc-card')).filter(c => c.style.display !== 'none');
-  if (visibleCards.length <= 1) {
-    container.style.display = 'none';
-    return;
-  }
-  container.style.display = 'flex';
-  const pills = visibleCards.map(card => {
-    const title = card.getAttribute('data-short-title') || card.querySelector('.calc-title')?.textContent || '';
-    return `<button type="button" class="jump-pill" onclick="jumpToCard('${card.id}')">${title}</button>`;
+
+  const specOrder = ['cardio', 'nephro', 'nutrition', 'medint', 'pediatrie', 'reanima'];
+  const allCards = Array.from(document.querySelectorAll('.calc-card'));
+
+  container.innerHTML = specOrder.map(specKey => {
+    const spec = SPECIALTIES[specKey];
+    const cards = allCards.filter(c => c.dataset.specialty === specKey);
+    const buttons = cards.map(c => {
+      const title = c.getAttribute('data-short-title') || c.querySelector('.calc-title')?.textContent;
+      const isActive = c.id === state.activeCardId;
+      return `
+        <button type="button" class="drawer-tool-btn ${isActive ? 'active' : ''}" onclick="selectTool('${c.id}', true)">
+          <span>${title}</span>
+          <span>›</span>
+        </button>
+      `;
+    }).join('');
+    return `
+      <div class="drawer-spec-group">
+        <h4>${spec.icon} ${spec.name}</h4>
+        <div class="drawer-spec-buttons">${buttons}</div>
+      </div>
+    `;
   }).join('');
-  container.innerHTML = `<span class="quick-jump-label">Accès direct :</span>${pills}`;
 }
 
 // ============================================================================
@@ -1676,100 +1829,6 @@ function calcCurb65() {
   `;
 }
 
-// ============================================================================
-// NAVIGATION, SEARCH, FILTERING & INITIALIZATION
-// ============================================================================
-
-function selectSpecialty(specId) {
-  state.activeSpecialty = specId;
-  document.querySelectorAll('.specialty-btn, .mobile-spec-chip').forEach(btn => {
-    const isMatch = btn.dataset.specialty === specId;
-    btn.classList.toggle('active', isMatch);
-    if (isMatch && btn.classList.contains('mobile-spec-chip')) {
-      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
-  });
-  updateBanner();
-  applyFilters();
-}
-
-function selectType(typeId) {
-  state.activeType = typeId;
-  document.querySelectorAll('.type-pill, .mobile-filter-chip').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.type === typeId);
-  });
-  applyFilters();
-}
-
-function updateBanner() {
-  const spec = SPECIALTIES[state.activeSpecialty] || SPECIALTIES.all;
-  const banner = document.getElementById('specialtyBanner');
-  const titleEl = document.getElementById('bannerTitle');
-  const descEl = document.getElementById('bannerDesc');
-  const quickGrid = document.getElementById('specialtyQuickGrid');
-
-  if (banner) banner.style.setProperty('--banner-accent', spec.color);
-  if (titleEl) titleEl.innerHTML = `<span>${spec.icon}</span> <span>${spec.name}</span>`;
-  if (descEl) descEl.textContent = spec.description;
-  if (quickGrid) {
-    quickGrid.style.display = (state.activeSpecialty === 'all' && !state.searchQuery && state.activeType === 'all') ? 'grid' : 'none';
-  }
-}
-
-function applyFilters() {
-  const q = state.searchQuery.trim().toLowerCase();
-  const cards = document.querySelectorAll('.calc-card');
-  let visibleCount = 0;
-
-  cards.forEach(card => {
-    const cardSpec = card.dataset.specialty;
-    const cardType = card.dataset.type;
-    const cardId = card.id.replace('card-', '');
-    const searchText = (card.dataset.keywords + ' ' + card.textContent).toLowerCase();
-
-    const matchesSpec = state.activeSpecialty === 'all' || cardSpec === state.activeSpecialty;
-    const matchesType = state.activeType === 'all'
-      || (state.activeType === 'fav' && state.favorites.includes(cardId))
-      || cardType.includes(state.activeType);
-    const matchesSearch = !q || searchText.includes(q);
-
-    const isVisible = matchesSpec && matchesType && matchesSearch;
-    card.style.display = isVisible ? 'flex' : 'none';
-    if (isVisible) visibleCount++;
-  });
-
-  const emptyState = document.getElementById('emptySearchState');
-  if (emptyState) emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-
-  const visibleCounter = document.getElementById('visibleToolsCount');
-  if (visibleCounter) visibleCounter.textContent = visibleCount;
-
-  const quickGrid = document.getElementById('specialtyQuickGrid');
-  if (quickGrid) {
-    quickGrid.style.display = (state.activeSpecialty === 'all' && !q && state.activeType === 'all') ? 'grid' : 'none';
-  }
-
-  updateQuickJumpBar();
-}
-
-function updateCounts() {
-  const counts = { all: 0, cardio: 0, nephro: 0, nutrition: 0, medint: 0, pediatrie: 0, reanima: 0 };
-  document.querySelectorAll('.calc-card').forEach(card => {
-    const s = card.dataset.specialty;
-    counts.all++;
-    if (counts[s] !== undefined) counts[s]++;
-  });
-
-  Object.keys(counts).forEach(k => {
-    const el = document.getElementById(`count-${k}`);
-    if (el) el.textContent = counts[k];
-  });
-
-  document.querySelectorAll('.fav-counter').forEach(el => {
-    el.textContent = state.favorites.length;
-  });
-}
-
 function toggleTheme() {
   const root = document.documentElement;
   const current = root.getAttribute('data-theme');
@@ -1778,7 +1837,7 @@ function toggleTheme() {
   localStorage.setItem('tomatocalc_theme', next);
   const btn = document.getElementById('btnThemeToggle');
   if (btn) {
-    btn.innerHTML = next === 'dark' ? '☀️ <span class="hide-mobile">Mode Clair</span>' : '🌙 <span class="hide-mobile">Mode Sombre</span>';
+    btn.innerHTML = next === 'dark' ? '☀️ <span class="hide-mobile">Clair</span>' : '🌙 <span class="hide-mobile">Sombre</span>';
   }
 }
 
@@ -1814,33 +1873,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.documentElement.setAttribute('data-theme', savedTheme);
   const themeBtn = document.getElementById('btnThemeToggle');
   if (themeBtn) {
-    themeBtn.innerHTML = savedTheme === 'dark' ? '☀️ <span class="hide-mobile">Mode Clair</span>' : '🌙 <span class="hide-mobile">Mode Sombre</span>';
+    themeBtn.innerHTML = savedTheme === 'dark' ? '☀️ <span class="hide-mobile">Clair</span>' : '🌙 <span class="hide-mobile">Sombre</span>';
   }
-
-  // Inject collapse button into every card header for mobile & desktop convenience
-  document.querySelectorAll('.calc-card').forEach(card => {
-    const favBtn = card.querySelector('.btn-fav');
-    if (favBtn && !card.querySelector('.card-header-actions')) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'card-header-actions';
-      favBtn.parentNode.insertBefore(wrapper, favBtn);
-      wrapper.appendChild(favBtn);
-
-      const collapseBtn = document.createElement('button');
-      collapseBtn.type = 'button';
-      collapseBtn.className = 'btn-collapse-card';
-      collapseBtn.innerHTML = '➖';
-      collapseBtn.title = 'Réduire / Déplier cet outil';
-      collapseBtn.onclick = () => toggleCardCollapse(card.id);
-      wrapper.appendChild(collapseBtn);
-    }
-  });
 
   const searchInput = document.getElementById('globalSearchInput');
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
       state.searchQuery = e.target.value;
-      applyFilters();
+      renderNavigationAndCards();
     });
   }
 
@@ -1852,9 +1892,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   updateFavoriteButtons();
-  updateCounts();
   renderClipboard();
-  updateBanner();
-  updateQuickJumpBar();
   runAllCalculations();
+  renderNavigationAndCards();
 });

@@ -9,67 +9,71 @@
 </head>
 <body>
 
-  <!-- ======================= HEADER ======================= -->
-  <header class="app-header">
-    <div class="header-inner">
-      <a href="#" class="brand" onclick="selectSpecialty('all'); return false;">
-        <img src="image/logo2.png" alt="TomatoCalc Logo" class="brand-logo" />
-        <div class="brand-text">
-          <div class="brand-title">
-            TomatoCalc<span class="dot">.</span>
-            <span class="brand-badge">Clinique v2</span>
+  <!-- ======================= STICKY TOP DOCK (Header + Specialty Tabs + Persistent Tool Tabs) ======================= -->
+  <div class="top-dock">
+    <header class="app-header">
+      <div class="header-inner">
+        <a href="#" class="brand" onclick="selectSpecialty('cardio'); return false;">
+          <img src="image/logo2.png" alt="TomatoCalc Logo" class="brand-logo" />
+          <div class="brand-text">
+            <div class="brand-title">
+              TomatoCalc<span class="dot">.</span>
+              <span class="brand-badge">Clinique v2</span>
+            </div>
+            <span class="brand-subtitle">1 outil à l’écran • Changement direct en 1 tap sans défiler</span>
           </div>
-          <span class="brand-subtitle">Calculateurs biologiques, scores pronostiques & classifications médicales</span>
-        </div>
-      </a>
-
-      <div class="search-wrapper">
-        <span class="search-icon">🔍</span>
-        <input
-          type="search"
-          id="globalSearchInput"
-          class="search-input"
-          placeholder="Rechercher : DFG, KDIGO, QTc, Glasgow, IMC, Child-Pugh..."
-        />
-        <span class="search-kbd">⌘K</span>
-      </div>
-
-      <div class="header-actions">
-        <button id="btnThemeToggle" class="btn-header" onclick="toggleTheme()">
-          🌙 <span class="hide-mobile">Mode Sombre</span>
-        </button>
-        <a href="original.html" class="btn-header btn-archive" title="Ouvrir le site TomatoCalc d'origine conservé intact">
-          🕰️ <span class="hide-mobile">Version</span> 2019
         </a>
-      </div>
-    </div>
-  </header>
 
-  <!-- ======================= MOBILE STICKY SPECIALTY & FILTER BAR ======================= -->
-  <div class="mobile-nav-shell" aria-label="Navigation mobile rapide">
-    <div class="mobile-spec-scroll">
-      <button type="button" class="mobile-spec-chip active" data-specialty="all" onclick="selectSpecialty('all')">🍅 Toutes</button>
-      <button type="button" class="mobile-spec-chip" data-specialty="cardio" onclick="selectSpecialty('cardio')">❤️ Cardio</button>
-      <button type="button" class="mobile-spec-chip" data-specialty="nephro" onclick="selectSpecialty('nephro')">🫘 Néphro</button>
-      <button type="button" class="mobile-spec-chip" data-specialty="nutrition" onclick="selectSpecialty('nutrition')">🍏 Nutrition</button>
-      <button type="button" class="mobile-spec-chip" data-specialty="medint" onclick="selectSpecialty('medint')">🧬 Méd. Interne</button>
-      <button type="button" class="mobile-spec-chip" data-specialty="pediatrie" onclick="selectSpecialty('pediatrie')">🧸 Pédiatrie</button>
-      <button type="button" class="mobile-spec-chip" data-specialty="reanima" onclick="selectSpecialty('reanima')">⚡ Réa / Urg</button>
-    </div>
-    <div class="mobile-filter-scroll">
-      <button type="button" class="mobile-filter-chip active" data-type="all" onclick="selectType('all')">Tous les outils</button>
-      <button type="button" class="mobile-filter-chip" data-type="calc" onclick="selectType('calc')">Calculateurs</button>
-      <button type="button" class="mobile-filter-chip" data-type="score" onclick="selectType('score')">Scores</button>
-      <button type="button" class="mobile-filter-chip" data-type="classification" onclick="selectType('classification')">Classifications</button>
-      <button type="button" class="mobile-filter-chip" data-type="fav" onclick="selectType('fav')">★ Favoris (<span class="fav-counter">4</span>)</button>
-    </div>
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="search"
+            id="globalSearchInput"
+            class="search-input"
+            placeholder="Rechercher un calcul (DFG, QTc, IMC, Glasgow...)"
+          />
+          <span class="search-kbd">⌘K</span>
+        </div>
+
+        <div class="header-actions">
+          <button type="button" id="btnViewModeToggle" class="btn-header" onclick="toggleViewMode()" title="Basculer entre 1 outil à la fois (sans défilement) et la grille complète">
+            🗂️ <span class="hide-mobile">Vue Grille</span>
+          </button>
+          <button type="button" id="btnThemeToggle" class="btn-header" onclick="toggleTheme()" title="Basculer le thème clair / sombre">
+            🌙 <span class="hide-mobile">Sombre</span>
+          </button>
+          <a href="original.html" class="btn-header btn-archive" title="Ouvrir le site TomatoCalc d'origine conservé intact">
+            🕰️ <span class="hide-mobile">2019</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ROW 1: SPECIALTIES BAR (Always visible) -->
+    <nav class="spec-tabs-bar" aria-label="Spécialités médicales">
+      <div class="spec-tabs-inner">
+        <button type="button" class="spec-tab active" data-specialty="cardio" onclick="selectSpecialty('cardio')">❤️ Cardio <span class="spec-count">6</span></button>
+        <button type="button" class="spec-tab" data-specialty="nephro" onclick="selectSpecialty('nephro')">🫘 Néphro <span class="spec-count">5</span></button>
+        <button type="button" class="spec-tab" data-specialty="nutrition" onclick="selectSpecialty('nutrition')">🍏 Nutrition <span class="spec-count">4</span></button>
+        <button type="button" class="spec-tab" data-specialty="medint" onclick="selectSpecialty('medint')">🧬 Méd. Interne <span class="spec-count">4</span></button>
+        <button type="button" class="spec-tab" data-specialty="pediatrie" onclick="selectSpecialty('pediatrie')">🧸 Pédiatrie <span class="spec-count">4</span></button>
+        <button type="button" class="spec-tab" data-specialty="reanima" onclick="selectSpecialty('reanima')">⚡ Réa / Urg <span class="spec-count">4</span></button>
+        <button type="button" class="spec-tab" data-specialty="fav" onclick="selectSpecialty('fav')">★ Favoris <span class="spec-count fav-counter">4</span></button>
+        <button type="button" class="spec-tab" data-specialty="all" onclick="selectSpecialty('all')">🍅 Tous <span class="spec-count">23</span></button>
+      </div>
+    </nav>
+
+    <!-- ROW 2: PERSISTENT TOOL TABS FOR CURRENT SPECIALTY (1-tap switch without scrolling) -->
+    <nav class="tool-tabs-bar" aria-label="Calculateurs de la spécialité">
+      <div class="tool-tabs-inner" id="toolTabsBar"></div>
+    </nav>
   </div>
 
-  <!-- ======================= SHARED PATIENT CONTEXT BAR ======================= -->
+  <!-- ======================= SHARED PATIENT CONTEXT BAR (Collapsible) ======================= -->
   <section class="patient-bar collapsed" id="patientBarSection">
     <div class="patient-bar-inner">
       <button type="button" class="patient-bar-toggle" onclick="togglePatientBar()">
-        <span>🩺 Constantes Patient <span id="patientCompactSummary" style="font-weight:500;color:var(--text-muted)">(Pré-remplissage rapide)</span></span>
+        <span>🩺 Constantes Patient <span id="patientCompactSummary" style="font-weight:500;color:var(--text-muted)">(Appuyer pour pré-remplir âge, poids, créat...)</span></span>
         <span class="chevron">▼</span>
       </button>
 
@@ -124,93 +128,22 @@
     <aside class="sidebar">
       <div class="sidebar-sticky">
 
-        <!-- Specialties Navigation -->
-        <nav class="nav-card" aria-label="Spécialités médicales">
-          <div class="nav-section-title">Spécialités</div>
-          <ul class="specialty-nav">
-            <li>
-              <button class="specialty-btn active" data-specialty="all" onclick="selectSpecialty('all')">
-                <span class="specialty-btn-left">
-                  <span class="specialty-dot" style="background: var(--tomato-500)"></span>
-                  <span>Toutes les spécialités</span>
-                </span>
-                <span class="specialty-count" id="count-all">24</span>
-              </button>
-            </li>
-            <li>
-              <button class="specialty-btn" data-specialty="cardio" onclick="selectSpecialty('cardio')">
-                <span class="specialty-btn-left">
-                  <span class="specialty-dot" style="background: var(--cardio-color)"></span>
-                  <span>Cardiologie</span>
-                </span>
-                <span class="specialty-count" id="count-cardio">6</span>
-              </button>
-            </li>
-            <li>
-              <button class="specialty-btn" data-specialty="nephro" onclick="selectSpecialty('nephro')">
-                <span class="specialty-btn-left">
-                  <span class="specialty-dot" style="background: var(--nephro-color)"></span>
-                  <span>Néphrologie</span>
-                </span>
-                <span class="specialty-count" id="count-nephro">5</span>
-              </button>
-            </li>
-            <li>
-              <button class="specialty-btn" data-specialty="nutrition" onclick="selectSpecialty('nutrition')">
-                <span class="specialty-btn-left">
-                  <span class="specialty-dot" style="background: var(--nutri-color)"></span>
-                  <span>Nutrition</span>
-                </span>
-                <span class="specialty-count" id="count-nutrition">4</span>
-              </button>
-            </li>
-            <li>
-              <button class="specialty-btn" data-specialty="medint" onclick="selectSpecialty('medint')">
-                <span class="specialty-btn-left">
-                  <span class="specialty-dot" style="background: var(--medint-color)"></span>
-                  <span>Médecine interne</span>
-                </span>
-                <span class="specialty-count" id="count-medint">4</span>
-              </button>
-            </li>
-            <li>
-              <button class="specialty-btn" data-specialty="pediatrie" onclick="selectSpecialty('pediatrie')">
-                <span class="specialty-btn-left">
-                  <span class="specialty-dot" style="background: var(--ped-color)"></span>
-                  <span>Pédiatrie</span>
-                </span>
-                <span class="specialty-count" id="count-pediatrie">4</span>
-              </button>
-            </li>
-            <li>
-              <button class="specialty-btn" data-specialty="reanima" onclick="selectSpecialty('reanima')">
-                <span class="specialty-btn-left">
-                  <span class="specialty-dot" style="background: var(--rea-color)"></span>
-                  <span>Réanimation & Urgences</span>
-                </span>
-                <span class="specialty-count" id="count-reanima">4</span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-
-        <!-- Filter by Category Type -->
+        <!-- Direct Tool List for Active Specialty -->
         <div class="nav-card">
-          <div class="nav-section-title">Filtrer par catégorie</div>
-          <div class="type-filters">
-            <button class="type-pill active" data-type="all" onclick="selectType('all')">Tous</button>
-            <button class="type-pill" data-type="calc" onclick="selectType('calc')">Calculateurs</button>
-            <button class="type-pill" data-type="score" onclick="selectType('score')">Scores</button>
-            <button class="type-pill" data-type="classification" onclick="selectType('classification')">Classifications</button>
-            <button class="type-pill" data-type="fav" onclick="selectType('fav')">★ Favoris (<span class="fav-counter">4</span>)</button>
+          <div class="nav-section-title" id="sidebarSpecTitle">
+            <span>❤️ Cardiologie</span>
           </div>
+          <div class="sidebar-tools-list" id="sidebarToolsList"></div>
+          <button type="button" class="btn-copy-all" style="margin-top:0.65rem;background:var(--bg-input);color:var(--text-primary);" onclick="toggleAllToolsDrawer(true)">
+            🧭 Catalogue des 23 outils
+          </button>
         </div>
 
         <!-- Clinical Clipboard -->
         <div class="nav-card">
           <div class="nav-section-title">📋 Presse-papiers clinique</div>
           <div id="clipboardList" class="clipboard-list"></div>
-          <button class="btn-copy-all" onclick="copyAllClipboard()">Copier la synthèse pour le dossier</button>
+          <button type="button" class="btn-copy-all" onclick="copyAllClipboard()">Copier la synthèse dossier</button>
         </div>
 
       </div>
@@ -219,87 +152,32 @@
     <!-- MAIN CONTENT -->
     <main class="main-content">
 
-      <!-- Specialty Banner -->
-      <div class="specialty-banner" id="specialtyBanner">
-        <div class="banner-info">
-          <h1 id="bannerTitle"><span>🍅</span> <span>Toutes les spécialités</span></h1>
-          <p id="bannerDesc">Calculateurs biologiques, scores pronostiques et classifications médicales de référence.</p>
-        </div>
-        <div class="banner-stats">
-          <div class="stat-chip"><strong id="visibleToolsCount">23</strong> outils affichés</div>
-          <button type="button" class="btn-header" onclick="toggleCollapseAllCards()" style="font-size:0.8rem;min-height:36px;">↕️ Plier / Déplier tout</button>
-        </div>
+      <!-- Active Calculator Switcher Bar (Prev / All Tools Modal / Next) -->
+      <div class="active-tool-nav-bar">
+        <button type="button" class="btn-step-tool" onclick="stepTool(-1)" title="Calculateur précédent (Flèche gauche)">
+          ◀ <span>Préc.</span>
+        </button>
+
+        <button type="button" class="btn-open-drawer" onclick="toggleAllToolsDrawer(true)">
+          <span id="drawerBtnText">🧭 Choisir un calcul (1/6)</span>
+          <span style="font-size:0.75rem;color:var(--text-muted)">▼</span>
+        </button>
+
+        <button type="button" class="btn-step-tool" onclick="stepTool(1)" title="Calculateur suivant (Flèche droite)">
+          <span>Suiv.</span> ▶
+        </button>
       </div>
-
-      <!-- Quick Specialty Tiles -->
-      <div class="specialty-quick-grid" id="specialtyQuickGrid">
-        <div class="specialty-tile" style="--tile-color: var(--cardio-color); --tile-bg: var(--cardio-bg); --tile-border: var(--cardio-border);" onclick="selectSpecialty('cardio')">
-          <div class="specialty-tile-top">
-            <div class="specialty-tile-icon">❤️</div>
-            <span class="specialty-tile-badge">6 outils</span>
-          </div>
-          <h3>Cardiologie</h3>
-          <p>CHA₂DS₂-VASc, HAS-BLED, QTc, Wells EP, PAM & HTA / NYHA</p>
-        </div>
-
-        <div class="specialty-tile" style="--tile-color: var(--nephro-color); --tile-bg: var(--nephro-bg); --tile-border: var(--nephro-border);" onclick="selectSpecialty('nephro')">
-          <div class="specialty-tile-top">
-            <div class="specialty-tile-icon">🫘</div>
-            <span class="specialty-tile-badge">5 outils</span>
-          </div>
-          <h3>Néphrologie</h3>
-          <p>Cockcroft, MDRD, CKD-EPI, FE Na, FE Urée & KDIGO IRC / IRA</p>
-        </div>
-
-        <div class="specialty-tile" style="--tile-color: var(--nutri-color); --tile-bg: var(--nutri-bg); --tile-border: var(--nutri-border);" onclick="selectSpecialty('nutrition')">
-          <div class="specialty-tile-top">
-            <div class="specialty-tile-icon">🍏</div>
-            <span class="specialty-tile-badge">4 outils</span>
-          </div>
-          <h3>Nutrition</h3>
-          <p>IMC & OMS, Poids Lorentz, NRI (Buzby) & Harris-Benedict</p>
-        </div>
-
-        <div class="specialty-tile" style="--tile-color: var(--medint-color); --tile-bg: var(--medint-bg); --tile-border: var(--medint-border);" onclick="selectSpecialty('medint')">
-          <div class="specialty-tile-top">
-            <div class="specialty-tile-icon">🧬</div>
-            <span class="specialty-tile-badge">4 outils</span>
-          </div>
-          <h3>Médecine interne</h3>
-          <p>Calcémie corrigée, Trou anionique, Natrémie (Katz) & Child-Pugh</p>
-        </div>
-
-        <div class="specialty-tile" style="--tile-color: var(--ped-color); --tile-bg: var(--ped-bg); --tile-border: var(--ped-border);" onclick="selectSpecialty('pediatrie')">
-          <div class="specialty-tile-top">
-            <div class="specialty-tile-icon">🧸</div>
-            <span class="specialty-tile-badge">4 outils</span>
-          </div>
-          <h3>Pédiatrie</h3>
-          <p>DFG Schwartz, Holliday-Segar (4-2-1), Apgar & Constantes</p>
-        </div>
-
-        <div class="specialty-tile" style="--tile-color: var(--rea-color); --tile-bg: var(--rea-bg); --tile-border: var(--rea-border);" onclick="selectSpecialty('reanima')">
-          <div class="specialty-tile-top">
-            <div class="specialty-tile-icon">⚡</div>
-            <span class="specialty-tile-badge">4 outils</span>
-          </div>
-          <h3>Réanimation</h3>
-          <p>PaO₂/FiO₂ & Berlin SDRA, Score de Glasgow, qSOFA & CURB-65</p>
-        </div>
-      </div>
-
-      <!-- Quick Jump Tool Index Bar -->
-      <div class="quick-jump-bar" id="quickJumpBar" aria-label="Accès direct aux outils"></div>
 
       <!-- Empty Search State -->
-      <div id="emptySearchState" style="display:none; text-align:center; padding: 2.5rem 1rem; background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
-        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔎</div>
-        <h3 style="margin-bottom: 0.35rem;">Aucun calculateur ou classification trouvé</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">Essayez un autre mot-clé ou réinitialisez les filtres de spécialité.</p>
+      <div id="emptySearchState" style="display:none; text-align:center; padding: 2.2rem 1rem; background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+        <div style="font-size: 1.8rem; margin-bottom: 0.4rem;">🔎</div>
+        <h3 style="margin-bottom: 0.3rem;">Aucun calculateur trouvé</h3>
+        <p style="color: var(--text-muted); font-size: 0.86rem; margin-bottom: 0.85rem;">Essayez un autre mot-clé ou affichez le catalogue complet.</p>
+        <button type="button" class="btn-open-drawer" style="margin:0 auto;" onclick="selectSpecialty('all')">🍅 Afficher tous les outils</button>
       </div>
 
-      <!-- ======================= CALCULATORS & CLASSIFICATIONS GRID ======================= -->
-      <div class="calculators-grid">
+      <!-- ======================= CALCULATORS & CLASSIFICATIONS CONTAINER ======================= -->
+      <div class="calculators-grid" id="calculatorsGrid">
 
         <!-- ===================================================================== -->
         <!-- 1. CARDIOLOGIE                                                        -->
@@ -1714,17 +1592,31 @@
     </main>
   </div>
 
-  <!-- ======================= MOBILE FLOATING BOTTOM BAR ======================= -->
+  <!-- ======================= MOBILE FLOATING BOTTOM BAR (Thumb-Zone Zero-Scroll Navigation) ======================= -->
   <div class="mobile-bottom-bar">
-    <button type="button" class="btn-mobile-bar primary" onclick="toggleMobileClipboard(true)">
+    <button type="button" class="btn-mobile-bar icon-only" onclick="stepTool(-1)" aria-label="Calculateur précédent">
+      ◀
+    </button>
+    <button type="button" class="btn-mobile-bar primary" onclick="toggleAllToolsDrawer(true)">
+      <span id="mobileDrawerBtnText">🧭 Calculs (1/6)</span>
+    </button>
+    <button type="button" class="btn-mobile-bar" onclick="toggleMobileClipboard(true)">
       📋 Synthèse (<span id="mobileClipboardCount">0</span>)
     </button>
-    <button type="button" id="btnMobileToggleCollapse" class="btn-mobile-bar" onclick="toggleCollapseAllCards()">
-      ↕️ Réduire
+    <button type="button" class="btn-mobile-bar icon-only" onclick="stepTool(1)" aria-label="Calculateur suivant">
+      ▶
     </button>
-    <button type="button" class="btn-mobile-bar" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
-      ⬆️ Haut
-    </button>
+  </div>
+
+  <!-- ======================= ALL TOOLS CATALOG BOTTOM SHEET / MODAL ======================= -->
+  <div class="mobile-sheet-backdrop" id="allToolsSheet" onclick="if(event.target === this) toggleAllToolsDrawer(false)">
+    <div class="mobile-sheet">
+      <div class="mobile-sheet-header">
+        <span>🧭 Choisir directement un calcul (23 outils)</span>
+        <button type="button" class="btn-header" onclick="toggleAllToolsDrawer(false)">✕ Fermer</button>
+      </div>
+      <div id="allToolsDrawerContent"></div>
+    </div>
   </div>
 
   <!-- ======================= MOBILE CLIPBOARD BOTTOM SHEET ======================= -->
@@ -1750,7 +1642,7 @@
       <div class="footer-links">
         <a href="original.html">🕰️ Accéder au code d’origine (2019)</a>
         <a href="compteur/choice.html">✈️ Mentions légales (Easter egg d’origine)</a>
-        <a href="Holidamn/index.html">🎬 Holidamn</a>
+        <a href="https://github.com/Mrthomaslef/Tomatocalc">🎬 Holidamn</a>
       </div>
     </div>
   </footer>

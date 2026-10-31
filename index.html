@@ -1,106 +1,1740 @@
-<html>
-
-<Head>
-    <title>TomatoCalc. - Home</title>
-    <script src="MedicH.js">
-    </script>
-    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <link rel="shortcut icon" href="image/favicon.ico">
-</Head>
-
-
-<style>
-
-.jumbotron{
-    background-color: blue;
-    color : white;
-    align-content: center;
-
-}
-
-.page-header {
-    color: white;
-    background-color: red;
-    border-color: black;
-    border-width: 5px;
-    border-style: double;
-    width: 350px;
-    text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);
-    text-align: center;
-    margin: auto;
-    font-weight: 900;
-    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-}
-
-.logo {
-    width: 200px;
-            height: 200px;
-            display: block;
-            margin-left: auto;
-    margin-right: auto ;
-}
-
-.list-group {
-    align-content: space-around;
-    color: white;
-    margin: auto;
-    font-weight: 300;
-    width: 350px;
-    text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);
-
-  
-}
-
-body {
-    background-color :rgba(95, 51, 43, 0.178);
-}
-
-#compteur {
-    text-align: right;
-}
-
-}
-
-
-
-
-</style>
-
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TomatoCalc. — Calculateurs Médicaux, Scores Cliniques & Classifications</title>
+  <link rel="shortcut icon" href="image/favicon.ico" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
 <body>
-        <b href="index.html"><img src="image/logo2.png" class="logo"> </b>
 
-        <H1>
-        
-            <div class="page-header">
-                    Spécialités
+  <!-- ======================= HEADER ======================= -->
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="#" class="brand" onclick="selectSpecialty('all'); return false;">
+        <img src="image/logo2.png" alt="TomatoCalc Logo" class="brand-logo" />
+        <div class="brand-text">
+          <div class="brand-title">
+            TomatoCalc<span class="dot">.</span>
+            <span class="brand-badge">Clinique v2</span>
+          </div>
+          <span class="brand-subtitle">Calculateurs biologiques, scores pronostiques & classifications médicales</span>
+        </div>
+      </a>
+
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input
+          type="search"
+          id="globalSearchInput"
+          class="search-input"
+          placeholder="Rechercher un score, une formule, une classification (ex: DFG, KDIGO, QTc, Glasgow, IMC...)"
+        />
+        <span class="search-kbd">⌘K</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="btnThemeToggle" class="btn-header" onclick="toggleTheme()">🌙 Mode Sombre</button>
+        <a href="original.html" class="btn-header btn-archive" title="Ouvrir le site TomatoCalc d'origine conservé intact">
+          🕰️ Version d’origine (2019)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================= SHARED PATIENT CONTEXT BAR ======================= -->
+  <section class="patient-bar">
+    <div class="patient-bar-inner">
+      <div class="patient-bar-title">
+        <span>🩺</span>
+        <span>Constantes Patient (pré-remplissage simultané) :</span>
+      </div>
+
+      <div class="patient-bar-fields">
+        <div class="patient-field">
+          <label for="patSexe">Sexe</label>
+          <select id="patSexe" onchange="syncPatientContext()">
+            <option value="H">Homme</option>
+            <option value="F">Femme</option>
+          </select>
+        </div>
+
+        <div class="patient-field">
+          <label for="patAge">Âge</label>
+          <input type="number" id="patAge" placeholder="68" min="0" max="120" oninput="syncPatientContext()" />
+          <span class="unit">ans</span>
+        </div>
+
+        <div class="patient-field">
+          <label for="patPoids">Poids</label>
+          <input type="number" id="patPoids" placeholder="72" min="1" max="300" step="0.5" oninput="syncPatientContext()" />
+          <span class="unit">kg</span>
+        </div>
+
+        <div class="patient-field">
+          <label for="patTaille">Taille</label>
+          <input type="number" id="patTaille" placeholder="172" min="30" max="240" oninput="syncPatientContext()" />
+          <span class="unit">cm</span>
+        </div>
+
+        <div class="patient-field">
+          <label for="patCreat">Créat</label>
+          <input type="number" id="patCreat" placeholder="95" min="1" max="3000" oninput="syncPatientContext()" />
+          <span class="unit">µmol/L</span>
+        </div>
+
+        <div class="patient-field">
+          <label for="patAlb">Albumine</label>
+          <input type="number" id="patAlb" placeholder="38" min="5" max="65" step="0.5" oninput="syncPatientContext()" />
+          <span class="unit">g/L</span>
+        </div>
+
+        <button class="btn-clear-patient" onclick="clearPatientContext()">Réinitialiser</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= MAIN LAYOUT ======================= -->
+  <div class="app-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-sticky">
+
+        <!-- Specialties Navigation -->
+        <nav class="nav-card" aria-label="Spécialités médicales">
+          <div class="nav-section-title">Spécialités</div>
+          <ul class="specialty-nav">
+            <li>
+              <button class="specialty-btn active" data-specialty="all" onclick="selectSpecialty('all')">
+                <span class="specialty-btn-left">
+                  <span class="specialty-dot" style="background: var(--tomato-500)"></span>
+                  <span>Toutes les spécialités</span>
+                </span>
+                <span class="specialty-count" id="count-all">20</span>
+              </button>
+            </li>
+            <li>
+              <button class="specialty-btn" data-specialty="cardio" onclick="selectSpecialty('cardio')">
+                <span class="specialty-btn-left">
+                  <span class="specialty-dot" style="background: var(--cardio-color)"></span>
+                  <span>Cardiologie</span>
+                </span>
+                <span class="specialty-count" id="count-cardio">6</span>
+              </button>
+            </li>
+            <li>
+              <button class="specialty-btn" data-specialty="nephro" onclick="selectSpecialty('nephro')">
+                <span class="specialty-btn-left">
+                  <span class="specialty-dot" style="background: var(--nephro-color)"></span>
+                  <span>Néphrologie</span>
+                </span>
+                <span class="specialty-count" id="count-nephro">5</span>
+              </button>
+            </li>
+            <li>
+              <button class="specialty-btn" data-specialty="nutrition" onclick="selectSpecialty('nutrition')">
+                <span class="specialty-btn-left">
+                  <span class="specialty-dot" style="background: var(--nutri-color)"></span>
+                  <span>Nutrition</span>
+                </span>
+                <span class="specialty-count" id="count-nutrition">4</span>
+              </button>
+            </li>
+            <li>
+              <button class="specialty-btn" data-specialty="medint" onclick="selectSpecialty('medint')">
+                <span class="specialty-btn-left">
+                  <span class="specialty-dot" style="background: var(--medint-color)"></span>
+                  <span>Médecine interne</span>
+                </span>
+                <span class="specialty-count" id="count-medint">4</span>
+              </button>
+            </li>
+            <li>
+              <button class="specialty-btn" data-specialty="pediatrie" onclick="selectSpecialty('pediatrie')">
+                <span class="specialty-btn-left">
+                  <span class="specialty-dot" style="background: var(--ped-color)"></span>
+                  <span>Pédiatrie</span>
+                </span>
+                <span class="specialty-count" id="count-pediatrie">4</span>
+              </button>
+            </li>
+            <li>
+              <button class="specialty-btn" data-specialty="reanima" onclick="selectSpecialty('reanima')">
+                <span class="specialty-btn-left">
+                  <span class="specialty-dot" style="background: var(--rea-color)"></span>
+                  <span>Réanimation & Urgences</span>
+                </span>
+                <span class="specialty-count" id="count-reanima">4</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Filter by Category Type -->
+        <div class="nav-card">
+          <div class="nav-section-title">Filtrer par catégorie</div>
+          <div class="type-filters">
+            <button class="type-pill active" data-type="all" onclick="selectType('all')">Tous</button>
+            <button class="type-pill" data-type="calc" onclick="selectType('calc')">Calculateurs</button>
+            <button class="type-pill" data-type="score" onclick="selectType('score')">Scores</button>
+            <button class="type-pill" data-type="classification" onclick="selectType('classification')">Classifications</button>
+            <button class="type-pill" data-type="fav" onclick="selectType('fav')">★ Favoris (<span id="count-fav">4</span>)</button>
+          </div>
+        </div>
+
+        <!-- Clinical Clipboard -->
+        <div class="nav-card">
+          <div class="nav-section-title">📋 Presse-papiers clinique</div>
+          <div id="clipboardList" class="clipboard-list"></div>
+          <button class="btn-copy-all" onclick="copyAllClipboard()">Copier la synthèse pour le dossier</button>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- Specialty Banner -->
+      <div class="specialty-banner" id="specialtyBanner">
+        <div class="banner-info">
+          <h1 id="bannerTitle"><span>🍅</span> <span>Toutes les spécialités</span></h1>
+          <p id="bannerDesc">Vue d’ensemble des calculateurs biologiques, scores pronostiques et classifications médicales de TomatoCalc.</p>
+        </div>
+        <div class="banner-stats">
+          <div class="stat-chip"><strong id="visibleToolsCount">27</strong> outils affichés</div>
+          <div class="stat-chip"><strong>6</strong> spécialités</div>
+        </div>
+      </div>
+
+      <!-- Quick Specialty Tiles -->
+      <div class="specialty-quick-grid" id="specialtyQuickGrid">
+        <div class="specialty-tile" style="--tile-color: var(--cardio-color); --tile-bg: var(--cardio-bg); --tile-border: var(--cardio-border);" onclick="selectSpecialty('cardio')">
+          <div class="specialty-tile-top">
+            <div class="specialty-tile-icon">❤️</div>
+            <span class="specialty-tile-badge">Cardiologie</span>
+          </div>
+          <h3>Cardiologie</h3>
+          <p>CHA₂DS₂-VASc, HAS-BLED, QTc (Bazett/Fridericia), Wells EP, PAM & Classifications HTA / NYHA / Killip</p>
+        </div>
+
+        <div class="specialty-tile" style="--tile-color: var(--nephro-color); --tile-bg: var(--nephro-bg); --tile-border: var(--nephro-border);" onclick="selectSpecialty('nephro')">
+          <div class="specialty-tile-top">
+            <div class="specialty-tile-icon">🫘</div>
+            <span class="specialty-tile-badge">Néphrologie</span>
+          </div>
+          <h3>Néphrologie</h3>
+          <p>Cockcroft-Gault, MDRD, CKD-EPI, FE Sodium, FE Urée & Classifications KDIGO IRC / IRA</p>
+        </div>
+
+        <div class="specialty-tile" style="--tile-color: var(--nutri-color); --tile-bg: var(--nutri-bg); --tile-border: var(--nutri-border);" onclick="selectSpecialty('nutrition')">
+          <div class="specialty-tile-top">
+            <div class="specialty-tile-icon">🍏</div>
+            <span class="specialty-tile-badge">Nutrition</span>
+          </div>
+          <h3>Nutrition</h3>
+          <p>IMC & Classification OMS, Poids idéal (Lorentz), NRI (Buzby), Harris-Benedict & Dénutrition HAS</p>
+        </div>
+
+        <div class="specialty-tile" style="--tile-color: var(--medint-color); --tile-bg: var(--medint-bg); --tile-border: var(--medint-border);" onclick="selectSpecialty('medint')">
+          <div class="specialty-tile-top">
+            <div class="specialty-tile-icon">🧬</div>
+            <span class="specialty-tile-badge">Méd. Interne</span>
+          </div>
+          <h3>Médecine interne</h3>
+          <p>Calcémie corrigée, Trou anionique, Natrémie corrigée (Katz), Osmolarité & Score de Child-Pugh</p>
+        </div>
+
+        <div class="specialty-tile" style="--tile-color: var(--ped-color); --tile-bg: var(--ped-bg); --tile-border: var(--ped-border);" onclick="selectSpecialty('pediatrie')">
+          <div class="specialty-tile-top">
+            <div class="specialty-tile-icon">🧸</div>
+            <span class="specialty-tile-badge">Pédiatrie</span>
+          </div>
+          <h3>Pédiatrie</h3>
+          <p>DFG Schwartz & normes par âge, Besoins hydriques Holliday-Segar (4-2-1), Score d’Apgar & Constantes</p>
+        </div>
+
+        <div class="specialty-tile" style="--tile-color: var(--rea-color); --tile-bg: var(--rea-bg); --tile-border: var(--rea-border);" onclick="selectSpecialty('reanima')">
+          <div class="specialty-tile-top">
+            <div class="specialty-tile-icon">⚡</div>
+            <span class="specialty-tile-badge">Réanimation</span>
+          </div>
+          <h3>Réanimation</h3>
+          <p>Rapport PaO₂/FiO₂ & Classification de Berlin du SDRA, Score de Glasgow (GCS), qSOFA & CURB-65</p>
+        </div>
+      </div>
+
+      <!-- Empty Search State -->
+      <div id="emptySearchState" style="display:none; text-align:center; padding: 3rem 1rem; background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔎</div>
+        <h3 style="margin-bottom: 0.35rem;">Aucun calculateur ou classification trouvé</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Essayez un autre mot-clé ou réinitialisez les filtres de spécialité.</p>
+      </div>
+
+      <!-- ======================= CALCULATORS & CLASSIFICATIONS GRID ======================= -->
+      <div class="calculators-grid">
+
+        <!-- ===================================================================== -->
+        <!-- 1. CARDIOLOGIE                                                        -->
+        <!-- ===================================================================== -->
+
+        <!-- CARDIO 1: CHA2DS2-VASc (Original) -->
+        <article class="calc-card" id="card-cardio-chad" data-specialty="cardio" data-type="score classification" data-keywords="cha2ds2 vasc fa fibrillation atriale auriculaire avc anticoagulation thromboembolique" style="--card-accent-color: var(--cardio-color); --card-accent-bg: var(--cardio-bg); --card-accent-border: var(--cardio-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">❤️ Cardiologie</span>
+                <span class="badge-type">Score & Recommandations</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">Score CHA₂DS₂-VASc</h2>
+              <p class="calc-subtitle">Risque thrombo-embolique et indication d’anticoagulation dans la Fibrillation Atriale (FA)</p>
             </div>
-        </H1>
-        <br>
-  
-        <ul class="list-group">
-                            <a class="btn btn-primary btn-lg" id="cardio" href="cardio/MedicCa.html"> Cardiologie</a> &nbsp;&nbsp;
-                            <a class="btn btn-primary btn-lg" id="nephro" href="nephro/MedicNE.html"> Néphrologie</a> &nbsp;&nbsp;
-                            <a class="btn btn-primary btn-lg" id="nutri" href="nutrition/MedicNU.html"> Nutrition</a> &nbsp;&nbsp;
-                            <a class="btn btn-primary btn-lg" id="medint" href="medint/medint.html"> Médecine interne</a> &nbsp;&nbsp;
-                            <a class="btn btn-primary btn-lg" id="rea" href="pediatrie/MedicPED.html"> Pédiatrie</a> &nbsp;&nbsp;
-                            <a class="btn btn-primary btn-lg" id="rea" href="reanima/MedicRA.html"> Réanimation</a> &nbsp;&nbsp;
-                         
-                        </ul>
-                       
-                         
-    
-             </div>
+            <button class="btn-fav" data-id="cardio-chad" onclick="toggleFavorite('cardio-chad')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="criteria-list">
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="chad_ic" onchange="calcChad()" /> <strong>C</strong> — Insuffisance cardiaque congestive / dysfonction VG (FEVG ≤ 40%)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="chad_hta" onchange="calcChad()" /> <strong>H</strong> — Hypertension artérielle (même traitée)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="chad_age75" onchange="if(this.checked) document.getElementById('chad_age65').checked=false; calcChad();" /> <strong>A₂</strong> — Âge ≥ 75 ans</span>
+                <span class="criteria-points">+2 pts</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="chad_diab" onchange="calcChad()" /> <strong>D</strong> — Diabète sucré</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="chad_avc" onchange="calcChad()" /> <strong>S₂</strong> — Antécédent d’AVC, d’AIT ou d’embolie systémique</span>
+                <span class="criteria-points">+2 pts</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="chad_vasc" onchange="calcChad()" /> <strong>V</strong> — Maladie vasculaire (IDM/SCA, AOMI, plaque aortique complexe)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="chad_age65" onchange="if(this.checked) document.getElementById('chad_age75').checked=false; calcChad();" /> <strong>A</strong> — Âge compris entre 65 et 74 ans</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="chad_sexe" onchange="calcChad()" /> <strong>Sc</strong> — Sexe féminin (modificateur de risque si ≥ 1 autre facteur)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+            </div>
+            <div id="res_chad" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Recommandations ESC :</strong> Score 0 (H) ou 1 (F isolé) : pas d’anticoagulant. Score 1 (H) ou 2 (F) : anticoagulation à discuter (IIa) selon balance HAS-BLED. Score ≥ 2 (H) ou ≥ 3 (F) : indication formelle d’anticoagulation orale (IA).
+            </div>
+          </div>
+        </article>
 
+        <!-- CARDIO 2: QT Corrigé (Original) -->
+        <article class="calc-card" id="card-cardio-qtc" data-specialty="cardio" data-type="calc classification" data-keywords="qt corrige qtc bazett fridericia framingham ecg torsade pointes rythme" style="--card-accent-color: var(--cardio-color); --card-accent-bg: var(--cardio-bg); --card-accent-border: var(--cardio-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">❤️ Cardiologie</span>
+                <span class="badge-type">Calculateur ECG</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">QT Corrigé (Bazett, Fridericia & Framingham)</h2>
+              <p class="calc-subtitle">Calcul simultané du QTc selon la fréquence cardiaque ou l’intervalle R-R</p>
+            </div>
+            <button class="btn-fav" data-id="cardio-qtc" onclick="toggleFavorite('cardio-qtc')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="qtc_qtm">QT mesuré <span class="hint">ms</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="qtc_qtm" value="400" min="150" max="800" oninput="calcQtc()" />
+                  <span class="input-unit">ms</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="qtc_hr">Fréquence Cardiaque <span class="hint">Bazett</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="qtc_hr" value="75" min="20" max="260" oninput="syncQtRrFromHr('hr')" />
+                  <span class="input-unit">bpm</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="qtc_rr">Intervalle R-R <span class="hint">Fridericia</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="qtc_rr" value="800" min="200" max="3000" oninput="syncQtRrFromHr('rr')" />
+                  <span class="input-unit">ms</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="qtc_sexe">Sexe du patient</label>
+                <select id="qtc_sexe" class="form-select" onchange="calcQtc()">
+                  <option value="H">Homme (N ≤ 440 ms)</option>
+                  <option value="F">Femme (N ≤ 450 ms)</option>
+                </select>
+              </div>
+            </div>
+            <div id="res_qtc" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Formules :</strong> Bazett : <code>QTc = QT / √(RR en s)</code> | Fridericia (plus précis si brady/tachycardie) : <code>QTc = QT / ∛(RR en s)</code> | Framingham : <code>QT + 154 × (1 - RR)</code>.<br />
+              <strong>Seuils :</strong> Normal ≤ 440 ms (H) / ≤ 450 ms (F) | Prolongé > 450 ms (H) / > 470 ms (F) | <strong>Critique ≥ 500 ms</strong> (risque de Torsades de Pointes).
+            </div>
+          </div>
+        </article>
 
+        <!-- CARDIO 3: Score HAS-BLED -->
+        <article class="calc-card" id="card-cardio-hasbled" data-specialty="cardio" data-type="score" data-keywords="has-bled hasbled saignement hemorragie anticoagulation avk aod fa" style="--card-accent-color: var(--cardio-color); --card-accent-bg: var(--cardio-bg); --card-accent-border: var(--cardio-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">❤️ Cardiologie</span>
+                <span class="badge-type">Score Clinique</span>
+              </div>
+              <h2 class="calc-title">Score HAS-BLED</h2>
+              <p class="calc-subtitle">Évaluation du risque hémorragique majeur à 1 an sous traitement anticoagulant</p>
+            </div>
+            <button class="btn-fav" data-id="cardio-hasbled" onclick="toggleFavorite('cardio-hasbled')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="criteria-list">
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcHasbled()" /> <strong>H</strong> — HTA non contrôlée (PAS > 160 mmHg)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcHasbled()" /> <strong>A</strong> — Insuffisance rénale chronique sévère (dialyse, greffe ou créat > 200 µmol/L)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcHasbled()" /> <strong>A</strong> — Insuffisance hépatique / cirrhose (ou bilirubine > 2N + transaminases > 3N)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcHasbled()" /> <strong>S</strong> — Antécédent d’AVC (ischémique ou hémorragique)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcHasbled()" /> <strong>B</strong> — Antécédent de saignement majeur ou prédisposition (anémie, thrombopénie)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcHasbled()" /> <strong>L</strong> — INR labile (< 60% du temps dans la zone thérapeutique sous AVK)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="hasbled_age" value="1" onchange="calcHasbled()" /> <strong>E</strong> — Sujet âgé (> 65 ans)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcHasbled()" /> <strong>D</strong> — Médicaments co-prescrits favorisant le saignement (antiagrégants, AINS)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcHasbled()" /> <strong>D</strong> — Consommation excessive d’alcool (≥ 8 verres/semaine)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+            </div>
+            <div id="res_hasbled" class="result-panel"></div>
+          </div>
+        </article>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" ></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" ></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" ></script>
+        <!-- CARDIO 4: Score de Wells (Embolie Pulmonaire) -->
+        <article class="calc-card" id="card-cardio-wells" data-specialty="cardio" data-type="score" data-keywords="wells embolie pulmonaire ep tvp phlebite d-dimeres angioscanner" style="--card-accent-color: var(--cardio-color); --card-accent-bg: var(--cardio-bg); --card-accent-border: var(--cardio-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">❤️ Cardiologie</span>
+                <span class="badge-type">Score Diagnostique</span>
+              </div>
+              <h2 class="calc-title">Score de Wells — Embolie Pulmonaire</h2>
+              <p class="calc-subtitle">Probabilité clinique pré-test d’embolie pulmonaire et algorithme décisionnel</p>
+            </div>
+            <button class="btn-fav" data-id="cardio-wells" onclick="toggleFavorite('cardio-wells')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="criteria-list">
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="3" onchange="calcWellsEp()" /> Signes cliniques de Thrombose Veineuse Profonde (TVP)</span>
+                <span class="criteria-points">+3 pts</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="3" onchange="calcWellsEp()" /> Diagnostic alternatif moins probable que l’embolie pulmonaire</span>
+                <span class="criteria-points">+3 pts</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1.5" onchange="calcWellsEp()" /> Fréquence cardiaque > 100 bpm</span>
+                <span class="criteria-points">+1,5 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1.5" onchange="calcWellsEp()" /> Immobilisation (≥ 3 jours) ou chirurgie dans les 4 semaines précédentes</span>
+                <span class="criteria-points">+1,5 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1.5" onchange="calcWellsEp()" /> Antécédent personnel de TVP ou d’Embolie Pulmonaire documentée</span>
+                <span class="criteria-points">+1,5 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcWellsEp()" /> Hémoptysie</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" value="1" onchange="calcWellsEp()" /> Cancer actif (en cours de traitement, traité < 6 mois ou palliatif)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+            </div>
+            <div id="res_wells" class="result-panel"></div>
+          </div>
+        </article>
+
+        <!-- CARDIO 5: PAM & Classification HTA (ESC/ESH) -->
+        <article class="calc-card" id="card-cardio-pam" data-specialty="cardio" data-type="calc classification" data-keywords="pam pression arterielle moyenne pas pad hta hypertension classification esc grades" style="--card-accent-color: var(--cardio-color); --card-accent-bg: var(--cardio-bg); --card-accent-border: var(--cardio-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">❤️ Cardiologie</span>
+                <span class="badge-type">Calculateur & Classification</span>
+              </div>
+              <h2 class="calc-title">Pression Artérielle Moyenne (PAM) & Grades d’HTA</h2>
+              <p class="calc-subtitle">Calcul de la PAM, de la pression pulsée et classification ESC/ESH de l’HTA</p>
+            </div>
+            <button class="btn-fav" data-id="cardio-pam" onclick="toggleFavorite('cardio-pam')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="pam_pas">PA Systolique (PAS)</label>
+                <div class="input-with-unit">
+                  <input type="number" id="pam_pas" value="125" min="40" max="300" oninput="calcPamHta()" />
+                  <span class="input-unit">mmHg</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pam_pad">PA Diastolique (PAD)</label>
+                <div class="input-with-unit">
+                  <input type="number" id="pam_pad" value="80" min="20" max="200" oninput="calcPamHta()" />
+                  <span class="input-unit">mmHg</span>
+                </div>
+              </div>
+            </div>
+            <div id="res_pam" class="result-panel"></div>
+            <div class="classification-table-wrap">
+              <table class="classification-table">
+                <thead>
+                  <tr>
+                    <th>Catégorie (ESC/ESH)</th>
+                    <th>PAS (mmHg)</th>
+                    <th></th>
+                    <th>PAD (mmHg)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Optimale</td><td>&lt; 120</td><td>et</td><td>&lt; 80</td></tr>
+                  <tr><td>Normale</td><td>120–129</td><td>et/ou</td><td>80–84</td></tr>
+                  <tr><td>Normale haute</td><td>130–139</td><td>et/ou</td><td>85–89</td></tr>
+                  <tr><td><strong>HTA Grade 1</strong> (Légère)</td><td>140–159</td><td>et/ou</td><td>90–99</td></tr>
+                  <tr><td><strong>HTA Grade 2</strong> (Modérée)</td><td>160–179</td><td>et/ou</td><td>100–109</td></tr>
+                  <tr><td><strong>HTA Grade 3</strong> (Sévère)</td><td>≥ 180</td><td>et/ou</td><td>≥ 110</td></tr>
+                  <tr><td><strong>HTA systolique isolée</strong></td><td>≥ 140</td><td>et</td><td>&lt; 90</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <!-- CARDIO 6: Classifications NYHA & Killip -->
+        <article class="calc-card" id="card-cardio-nyha" data-specialty="cardio" data-type="classification" data-keywords="nyha killip classification insuffisance cardiaque dyspnee infarctus sca choc cardiogenique" style="--card-accent-color: var(--cardio-color); --card-accent-bg: var(--cardio-bg); --card-accent-border: var(--cardio-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">❤️ Cardiologie</span>
+                <span class="badge-type">Classifications Cliniques</span>
+              </div>
+              <h2 class="calc-title">Classifications NYHA & Killip-Kimball</h2>
+              <p class="calc-subtitle">Sévérité fonctionnelle de la dyspnée (NYHA) et insuffisance cardiaque aiguë post-IDM (Killip)</p>
+            </div>
+            <button class="btn-fav" data-id="cardio-nyha" onclick="toggleFavorite('cardio-nyha')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="classification-table-wrap">
+              <table class="classification-table">
+                <thead>
+                  <tr>
+                    <th>Stade NYHA</th>
+                    <th>Symptomatologie fonctionnelle (Insuffisance Cardiaque / Dyspnée)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><strong>Classe I</strong></td><td>Aucune limitation de l’activité physique ordinaire (asymptomatique à l’effort courant).</td></tr>
+                  <tr><td><strong>Classe II</strong></td><td>Limitation modérée : asymptomatique au repos, dyspnée/fatigue pour des efforts importants ou inhabituels.</td></tr>
+                  <tr><td><strong>Classe III</strong></td><td>Limitation marquée : asymptomatique au repos, mais dyspnée dès les efforts modestes de la vie courante.</td></tr>
+                  <tr><td><strong>Classe IV</strong></td><td>Incapacité à réaliser le moindre effort sans gêne ; symptômes présents même au repos (orthopnée).</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="classification-table-wrap">
+              <table class="classification-table">
+                <thead>
+                  <tr>
+                    <th>Stade Killip</th>
+                    <th>Examen clinique dans le Syndrome Coronarien Aigu (SCA)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><strong>Killip I</strong></td><td>Pas de signe d’insuffisance cardiaque gauche (auscultation pulmonaire normale).</td></tr>
+                  <tr><td><strong>Killip II</strong></td><td>Râles crépitants aux bases pulmonaires (&lt; 50 % des champs) et/ou bruit de galop B3.</td></tr>
+                  <tr><td><strong>Killip III</strong></td><td>Œdème Aigu du Poumon (OAP) franc avec crépitants dépassant la moitié des champs pulmonaires.</td></tr>
+                  <tr><td><strong>Killip IV</strong></td><td>Choc cardiogénique (PAS &lt; 90 mmHg + signes d’hypoperfusion périphérique / oligurie / marbrures).</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <!-- ===================================================================== -->
+        <!-- 2. NEPHROLOGIE                                                        -->
+        <!-- ===================================================================== -->
+
+        <!-- NEPHRO 1: Cockcroft, MDRD & CKD-EPI (Originals 1, 2, 3 unified + KDIGO) -->
+        <article class="calc-card" id="card-nephro-dfg" data-specialty="nephro" data-type="calc classification" data-keywords="cockcroft gault mdrd ckd-epi ckdepi dfg clairance creatinine rein irc kdigo" style="--card-accent-color: var(--nephro-color); --card-accent-bg: var(--nephro-bg); --card-accent-border: var(--nephro-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🫘 Néphrologie</span>
+                <span class="badge-type">Calculateur & Stade KDIGO</span>
+                <span class="badge-origin">🍅 3 Outils d’origine réunis</span>
+              </div>
+              <h2 class="calc-title">Fonction Rénale : Cockcroft-Gault, MDRD & CKD-EPI</h2>
+              <p class="calc-subtitle">Calcul simultané de la clairance et du DFG estimé avec stadification KDIGO automatique</p>
+            </div>
+            <button class="btn-fav" data-id="nephro-dfg" onclick="toggleFavorite('nephro-dfg')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="dfg_age">Âge</label>
+                <div class="input-with-unit">
+                  <input type="number" id="dfg_age" value="65" min="18" max="120" oninput="calcNephroDfg()" />
+                  <span class="input-unit">ans</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="dfg_poids">Poids <span class="hint">Cockcroft</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="dfg_poids" value="72" min="20" max="300" step="0.5" oninput="calcNephroDfg()" />
+                  <span class="input-unit">kg</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="dfg_creat">Créatininémie</label>
+                <div class="input-with-unit">
+                  <input type="number" id="dfg_creat" value="95" min="1" max="3000" step="0.1" oninput="calcNephroDfg()" />
+                  <select id="dfg_unit" class="unit-select" onchange="calcNephroDfg()">
+                    <option value="umol">µmol/L</option>
+                    <option value="mgdl">mg/dL</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="dfg_sexe">Sexe</label>
+                <select id="dfg_sexe" class="form-select" onchange="calcNephroDfg()">
+                  <option value="H">Homme (k=1,23)</option>
+                  <option value="F">Femme (k=1,04)</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="dfg_ethnie">Facteur ethnique <span class="hint">MDRD / CKD-EPI 2009</span></label>
+                <select id="dfg_ethnie" class="form-select" onchange="calcNephroDfg()">
+                  <option value="other">Caucasienne / Asiatique / Autre (facteur 1,0)</option>
+                  <option value="black">Afro-américaine / Peau noire (MDRD ×1,212 | CKD-EPI 2009 ×1,159)</option>
+                </select>
+              </div>
+            </div>
+            <div id="res_dfg" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Cockcroft & Gault :</strong> <code>[(140 - Âge) × Poids × k] / Créat (µmol/L)</code> (k = 1,23 H / 1,04 F)<br />
+              <strong>MDRD :</strong> <code>175 × (Scr × 0,0113)^-1,154 × Âge^-0,203 × (0,742 si F) × (1,212 si peau noire)</code><br />
+              <strong>CKD-EPI :</strong> <code>141 × min(Scr/K, 1)^α × max(Scr/K, 1)^-1,209 × 0,993^Âge × (1,018 si F)</code>
+            </div>
+          </div>
+        </article>
+
+        <!-- NEPHRO 2: Classification KDIGO Pronostique Interactive (G1-G5 x A1-A3) -->
+        <article class="calc-card" id="card-nephro-kdigo" data-specialty="nephro" data-type="classification" data-keywords="kdigo classification irc insuffisance renale chronique stades g1 g2 g3a g3b g4 g5 albuminurie rac a1 a2 a3" style="--card-accent-color: var(--nephro-color); --card-accent-bg: var(--nephro-bg); --card-accent-border: var(--nephro-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🫘 Néphrologie</span>
+                <span class="badge-type">Classification Pronostique</span>
+              </div>
+              <h2 class="calc-title">Classification KDIGO de l’IRC (DFG × Albuminurie)</h2>
+              <p class="calc-subtitle">Matrice pronostique interactive KDIGO combinant le stade de DFG (G1–G5) et le niveau d’albuminurie (A1–A3)</p>
+            </div>
+            <button class="btn-fav" data-id="nephro-kdigo" onclick="toggleFavorite('nephro-kdigo')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="kdigo_g">Stade de DFG (mL/min/1,73m²)</label>
+                <select id="kdigo_g" class="form-select" onchange="updateKdigoMatrix()">
+                  <option value="G1">G1 : ≥ 90 (Normal ou élevé)</option>
+                  <option value="G2" selected>G2 : 60–89 (Légèrement diminué)</option>
+                  <option value="G3a">G3a : 45–59 (Diminution légère à modérée)</option>
+                  <option value="G3b">G3b : 30–44 (Diminution modérée à sévère)</option>
+                  <option value="G4">G4 : 15–29 (Diminution sévère)</option>
+                  <option value="G5">G5 : &lt; 15 (IRC terminale)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="kdigo_a">Catégorie d’Albuminurie (RAC)</label>
+                <select id="kdigo_a" class="form-select" onchange="updateKdigoMatrix()">
+                  <option value="A1" selected>A1 : &lt; 30 mg/g (&lt; 3 mg/mmol) — Normale</option>
+                  <option value="A2">A2 : 30–300 mg/g (3–30 mg/mmol) — Modérée</option>
+                  <option value="A3">A3 : &gt; 300 mg/g (&gt; 30 mg/mmol) — Sévère</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="classification-table-wrap">
+              <table class="classification-table" id="kdigoMatrixTable">
+                <thead>
+                  <tr>
+                    <th>Stade DFG</th>
+                    <th>mL/min/1,73m²</th>
+                    <th style="text-align:center">A1 (&lt;30 mg/g)</th>
+                    <th style="text-align:center">A2 (30–300 mg/g)</th>
+                    <th style="text-align:center">A3 (&gt;300 mg/g)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>G1</strong></td><td>≥ 90</td>
+                    <td class="kdigo-cell kdigo-low" data-ga="G1-A1" onclick="document.getElementById('kdigo_g').value='G1';document.getElementById('kdigo_a').value='A1';updateKdigoMatrix();" style="cursor:pointer">Faible</td>
+                    <td class="kdigo-cell kdigo-mod" data-ga="G1-A2" onclick="document.getElementById('kdigo_g').value='G1';document.getElementById('kdigo_a').value='A2';updateKdigoMatrix();" style="cursor:pointer">Modéré</td>
+                    <td class="kdigo-cell kdigo-high" data-ga="G1-A3" onclick="document.getElementById('kdigo_g').value='G1';document.getElementById('kdigo_a').value='A3';updateKdigoMatrix();" style="cursor:pointer">Élevé</td>
+                  </tr>
+                  <tr>
+                    <td><strong>G2</strong></td><td>60–89</td>
+                    <td class="kdigo-cell kdigo-low" data-ga="G2-A1" onclick="document.getElementById('kdigo_g').value='G2';document.getElementById('kdigo_a').value='A1';updateKdigoMatrix();" style="cursor:pointer">Faible</td>
+                    <td class="kdigo-cell kdigo-mod" data-ga="G2-A2" onclick="document.getElementById('kdigo_g').value='G2';document.getElementById('kdigo_a').value='A2';updateKdigoMatrix();" style="cursor:pointer">Modéré</td>
+                    <td class="kdigo-cell kdigo-high" data-ga="G2-A3" onclick="document.getElementById('kdigo_g').value='G2';document.getElementById('kdigo_a').value='A3';updateKdigoMatrix();" style="cursor:pointer">Élevé</td>
+                  </tr>
+                  <tr>
+                    <td><strong>G3a</strong></td><td>45–59</td>
+                    <td class="kdigo-cell kdigo-mod" data-ga="G3a-A1" onclick="document.getElementById('kdigo_g').value='G3a';document.getElementById('kdigo_a').value='A1';updateKdigoMatrix();" style="cursor:pointer">Modéré</td>
+                    <td class="kdigo-cell kdigo-high" data-ga="G3a-A2" onclick="document.getElementById('kdigo_g').value='G3a';document.getElementById('kdigo_a').value='A2';updateKdigoMatrix();" style="cursor:pointer">Élevé</td>
+                    <td class="kdigo-cell kdigo-vhigh" data-ga="G3a-A3" onclick="document.getElementById('kdigo_g').value='G3a';document.getElementById('kdigo_a').value='A3';updateKdigoMatrix();" style="cursor:pointer">Très élevé</td>
+                  </tr>
+                  <tr>
+                    <td><strong>G3b</strong></td><td>30–44</td>
+                    <td class="kdigo-cell kdigo-high" data-ga="G3b-A1" onclick="document.getElementById('kdigo_g').value='G3b';document.getElementById('kdigo_a').value='A1';updateKdigoMatrix();" style="cursor:pointer">Élevé</td>
+                    <td class="kdigo-cell kdigo-vhigh" data-ga="G3b-A2" onclick="document.getElementById('kdigo_g').value='G3b';document.getElementById('kdigo_a').value='A2';updateKdigoMatrix();" style="cursor:pointer">Très élevé</td>
+                    <td class="kdigo-cell kdigo-vhigh" data-ga="G3b-A3" onclick="document.getElementById('kdigo_g').value='G3b';document.getElementById('kdigo_a').value='A3';updateKdigoMatrix();" style="cursor:pointer">Très élevé</td>
+                  </tr>
+                  <tr>
+                    <td><strong>G4</strong></td><td>15–29</td>
+                    <td class="kdigo-cell kdigo-vhigh" data-ga="G4-A1" onclick="document.getElementById('kdigo_g').value='G4';document.getElementById('kdigo_a').value='A1';updateKdigoMatrix();" style="cursor:pointer">Très élevé</td>
+                    <td class="kdigo-cell kdigo-vhigh" data-ga="G4-A2" onclick="document.getElementById('kdigo_g').value='G4';document.getElementById('kdigo_a').value='A2';updateKdigoMatrix();" style="cursor:pointer">Très élevé</td>
+                    <td class="kdigo-cell kdigo-vhigh" data-ga="G4-A3" onclick="document.getElementById('kdigo_g').value='G4';document.getElementById('kdigo_a').value='A3';updateKdigoMatrix();" style="cursor:pointer">Très élevé</td>
+                  </tr>
+                  <tr>
+                    <td><strong>G5</strong></td><td>&lt; 15</td>
+                    <td class="kdigo-cell kdigo-vhigh" data-ga="G5-A1" onclick="document.getElementById('kdigo_g').value='G5';document.getElementById('kdigo_a').value='A1';updateKdigoMatrix();" style="cursor:pointer">Très élevé</td>
+                    <td class="kdigo-cell kdigo-vhigh" data-ga="G5-A2" onclick="document.getElementById('kdigo_g').value='G5';document.getElementById('kdigo_a').value='A2';updateKdigoMatrix();" style="cursor:pointer">Très élevé</td>
+                    <td class="kdigo-cell kdigo-vhigh" data-ga="G5-A3" onclick="document.getElementById('kdigo_g').value='G5';document.getElementById('kdigo_a').value='A3';updateKdigoMatrix();" style="cursor:pointer">Très élevé</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="res_kdigo_matrix" class="result-panel"></div>
+          </div>
+        </article>
+
+        <!-- NEPHRO 3: FE du Sodium (Original) -->
+        <article class="calc-card" id="card-nephro-fena" data-specialty="nephro" data-type="calc" data-keywords="fe sodium fena fraction excretion sodium ira fonctionnelle organique nta" style="--card-accent-color: var(--nephro-color); --card-accent-bg: var(--nephro-bg); --card-accent-border: var(--nephro-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🫘 Néphrologie</span>
+                <span class="badge-type">Calculateur Biologique</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">Fraction d’Excrétion du Sodium — FE(Na)</h2>
+              <p class="calc-subtitle">Orientation diagnostique entre IRA fonctionnelle (pré-rénale) et IRA organique (NTA)</p>
+            </div>
+            <button class="btn-fav" data-id="nephro-fena" onclick="toggleFavorite('nephro-fena')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="fena_nau">[Na⁺] Urinaire</label>
+                <div class="input-with-unit">
+                  <input type="number" id="fena_nau" value="15" step="0.1" oninput="calcFeNa()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="fena_nap">[Na⁺] Plasmatique</label>
+                <div class="input-with-unit">
+                  <input type="number" id="fena_nap" value="140" step="0.1" oninput="calcFeNa()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="fena_cu">[Créat] Urinaire</label>
+                <div class="input-with-unit">
+                  <input type="number" id="fena_cu" value="12" step="0.1" oninput="calcFeNa()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="fena_cp">[Créat] Plasmatique</label>
+                <div class="input-with-unit">
+                  <input type="number" id="fena_cp" value="180" step="0.1" oninput="calcFeNa()" />
+                  <select id="fena_unit_mode" class="unit-select" onchange="calcFeNa()">
+                    <option value="umol_mmol" selected>µmol/L</option>
+                    <option value="same">mmol/L (origine)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div id="res_fena" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Formule :</strong> <code>FE(Na) = ([Na U] × [Créat P]) / ([Na P] × [Créat U]) × 100</code>.<br />
+              <strong>Interprétation :</strong> &lt; 1 % : IRA fonctionnelle (réabsorption tubulaire intacte) | &gt; 2 % : Nécrose Tubulaire Aiguë (ou prise de diurétiques).
+            </div>
+          </div>
+        </article>
+
+        <!-- NEPHRO 4: FE d'Urée (Original) -->
+        <article class="calc-card" id="card-nephro-feuree" data-specialty="nephro" data-type="calc" data-keywords="fe uree feuree fraction excretion uree diuretiques ira fonctionnelle organique" style="--card-accent-color: var(--nephro-color); --card-accent-bg: var(--nephro-bg); --card-accent-border: var(--cardio-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🫘 Néphrologie</span>
+                <span class="badge-type">Calculateur Biologique</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">Fraction d’Excrétion de l’Urée — FE(Urée)</h2>
+              <p class="calc-subtitle">Outil de choix en cas de traitement diurétique pour distinguer IRA fonctionnelle et organique</p>
+            </div>
+            <button class="btn-fav" data-id="nephro-feuree" onclick="toggleFavorite('nephro-feuree')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="feuree_uu">[Urée] Urinaire</label>
+                <div class="input-with-unit">
+                  <input type="number" id="feuree_uu" value="220" step="0.1" oninput="calcFeUree()" />
+                  <span class="input-unit">mmol/L ou g/L</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="feuree_up">[Urée] Plasmatique</label>
+                <div class="input-with-unit">
+                  <input type="number" id="feuree_up" value="15" step="0.1" oninput="calcFeUree()" />
+                  <span class="input-unit">même unité</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="feuree_cu">[Créat] Urinaire</label>
+                <div class="input-with-unit">
+                  <input type="number" id="feuree_cu" value="10" step="0.1" oninput="calcFeUree()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="feuree_cp">[Créat] Plasmatique</label>
+                <div class="input-with-unit">
+                  <input type="number" id="feuree_cp" value="190" step="0.1" oninput="calcFeUree()" />
+                  <select id="feuree_unit_mode" class="unit-select" onchange="calcFeUree()">
+                    <option value="umol_mmol" selected>µmol/L</option>
+                    <option value="same">mmol/L (origine)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div id="res_feuree" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Formule :</strong> <code>FE(Urée) = ([Urée U] × [Créat P]) / ([Urée P] × [Créat U]) × 100</code>.<br />
+              <strong>Interprétation :</strong> Utile si patient sous diurétiques : <strong>&lt; 35 % = IRA fonctionnelle</strong> | &gt; 50 % = IRA organique (NTA).
+            </div>
+          </div>
+        </article>
+
+        <!-- NEPHRO 5: Classification KDIGO de l'IRA -->
+        <article class="calc-card" id="card-nephro-ira" data-specialty="nephro" data-type="classification" data-keywords="ira insuffisance renale aigue kdigo classification stades diurese oligurie anurie creatinine" style="--card-accent-color: var(--nephro-color); --card-accent-bg: var(--nephro-bg); --card-accent-border: var(--nephro-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🫘 Néphrologie</span>
+                <span class="badge-type">Classification Clinique</span>
+              </div>
+              <h2 class="calc-title">Classification KDIGO de l’Insuffisance Rénale Aiguë (IRA)</h2>
+              <p class="calc-subtitle">Définition et stadification de sévérité (Stades 1, 2 et 3) selon la créatininémie et la diurèse</p>
+            </div>
+            <button class="btn-fav" data-id="nephro-ira" onclick="toggleFavorite('nephro-ira')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="classification-table-wrap">
+              <table class="classification-table">
+                <thead>
+                  <tr>
+                    <th>Stade KDIGO</th>
+                    <th>Critère Créatininémie</th>
+                    <th>Critère Diurèse</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Stade 1</strong></td>
+                    <td>Élévation ≥ <strong>26,5 µmol/L</strong> (0,3 mg/dL) en 48h<br /><em>ou</em> <strong>× 1,5 à 1,9</strong> la valeur de base en 7 jours</td>
+                    <td>&lt; 0,5 mL/kg/h pendant 6 à 12 heures</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Stade 2</strong></td>
+                    <td>Créatininémie <strong>× 2,0 à 2,9</strong> la valeur de base</td>
+                    <td>&lt; 0,5 mL/kg/h pendant ≥ 12 heures</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Stade 3</strong></td>
+                    <td>Créatininémie <strong>≥ × 3,0</strong> la base<br /><em>ou</em> Créatininémie ≥ <strong>354 µmol/L</strong> (4,0 mg/dL)<br /><em>ou</em> Mise en route d’une épuration extra-rénale (dialyse)</td>
+                    <td>&lt; 0,3 mL/kg/h pendant ≥ 24 heures<br /><em>ou</em> Anurie pendant ≥ 12 heures</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="formula-box">
+              <strong>Règle clinique :</strong> En cas de discordance entre le critère biologique (créatininémie) et le critère clinique (diurèse), on retient le stade le plus sévère.
+            </div>
+          </div>
+        </article>
+
+        <!-- ===================================================================== -->
+        <!-- 3. NUTRITION                                                          -->
+        <!-- ===================================================================== -->
+
+        <!-- NUTRITION 1: IMC & Classification OMS (Original) -->
+        <article class="calc-card" id="card-nutrition-imc" data-specialty="nutrition" data-type="calc classification" data-keywords="imc bmi indice masse corporelle poids taille obesite denutrition surpoids surface corporelle mosteller oms" style="--card-accent-color: var(--nutri-color); --card-accent-bg: var(--nutri-bg); --card-accent-border: var(--nutri-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🍏 Nutrition</span>
+                <span class="badge-type">Calculateur & Classification OMS</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">IMC, Surface Corporelle & Classification OMS</h2>
+              <p class="calc-subtitle">Indice de Masse Corporelle, surface corporelle (Mosteller) et seuils OMS / HAS</p>
+            </div>
+            <button class="btn-fav" data-id="nutrition-imc" onclick="toggleFavorite('nutrition-imc')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="imc_poids">Poids</label>
+                <div class="input-with-unit">
+                  <input type="number" id="imc_poids" value="72" min="10" max="350" step="0.5" oninput="calcImc()" />
+                  <span class="input-unit">kg</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="imc_taille">Taille</label>
+                <div class="input-with-unit">
+                  <input type="number" id="imc_taille" value="175" min="50" max="240" oninput="calcImc()" />
+                  <span class="input-unit">cm</span>
+                </div>
+              </div>
+            </div>
+            <div id="res_imc" class="result-panel"></div>
+            <div class="classification-table-wrap">
+              <table class="classification-table" id="omsImcTable">
+                <thead>
+                  <tr>
+                    <th>Classification OMS (Adulte)</th>
+                    <th>IMC (kg/m²)</th>
+                    <th>Risque de comorbidités</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-range="0-16.5"><td>Dénutrition sévère</td><td>&lt; 16,5</td><td>Élevé (risque carentiel et infectieux)</td></tr>
+                  <tr data-range="16.5-18.5"><td>Maigreur / Dénutrition (&lt;70 ans)</td><td>16,5 – 18,4</td><td>Accru (Attention : seuil &lt; 22 si ≥ 70 ans)</td></tr>
+                  <tr data-range="18.5-25"><td><strong>Corpulence normale</strong></td><td>18,5 – 24,9</td><td>Faible (référence)</td></tr>
+                  <tr data-range="25-30"><td>Surpoids (Pré-obésité)</td><td>25,0 – 29,9</td><td>Légèrement accru</td></tr>
+                  <tr data-range="30-35"><td>Obésité Grade I (Modérée)</td><td>30,0 – 34,9</td><td>Modérément élevé</td></tr>
+                  <tr data-range="35-40"><td>Obésité Grade II (Sévère)</td><td>35,0 – 39,9</td><td>Élevé</td></tr>
+                  <tr data-range="40-999"><td>Obésité Grade III (Morbide / Massive)</td><td>≥ 40,0</td><td>Très élevé</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <!-- NUTRITION 2: Poids théorique de Lorentz (Original) -->
+        <article class="calc-card" id="card-nutrition-lorentz" data-specialty="nutrition" data-type="calc" data-keywords="poids theorique ideal lorentz devine volume courant ventilation" style="--card-accent-color: var(--nutri-color); --card-accent-bg: var(--nutri-bg); --card-accent-border: var(--nutri-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🍏 Nutrition</span>
+                <span class="badge-type">Calculateur</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">Poids Théorique Idéal (Formule de Lorentz & Devine)</h2>
+              <p class="calc-subtitle">Calcul du poids idéal selon la taille et le sexe + volume courant protecteur</p>
+            </div>
+            <button class="btn-fav" data-id="nutrition-lorentz" onclick="toggleFavorite('nutrition-lorentz')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="lorentz_taille">Taille</label>
+                <div class="input-with-unit">
+                  <input type="number" id="lorentz_taille" value="175" min="100" max="240" oninput="calcLorentz()" />
+                  <span class="input-unit">cm</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lorentz_sexe">Sexe</label>
+                <select id="lorentz_sexe" class="form-select" onchange="calcLorentz()">
+                  <option value="H">Homme (k = 4)</option>
+                  <option value="F">Femme (k = 2,5)</option>
+                </select>
+              </div>
+            </div>
+            <div id="res_lorentz" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Formule de Lorentz :</strong> Homme : <code>Taille - 100 - ((Taille - 150) / 4)</code> | Femme : <code>Taille - 100 - ((Taille - 150) / 2,5)</code>.
+            </div>
+          </div>
+        </article>
+
+        <!-- NUTRITION 3: Nutritional Risk Index (Original) -->
+        <article class="calc-card" id="card-nutrition-nri" data-specialty="nutrition" data-type="score classification" data-keywords="nri nutritional risk index buzby albumine denutrition geriatrie" style="--card-accent-color: var(--nutri-color); --card-accent-bg: var(--nutri-bg); --card-accent-border: var(--nutri-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🍏 Nutrition</span>
+                <span class="badge-type">Indice Pronostique</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">Nutritional Risk Index (NRI / Indice de Buzby)</h2>
+              <p class="calc-subtitle">Évaluation du risque de complications liées à la dénutrition (poids & albuminémie)</p>
+            </div>
+            <button class="btn-fav" data-id="nutrition-nri" onclick="toggleFavorite('nutrition-nri')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="nri_poids_act">Poids actuel</label>
+                <div class="input-with-unit">
+                  <input type="number" id="nri_poids_act" value="62" step="0.5" oninput="calcNri()" />
+                  <span class="input-unit">kg</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="nri_poids_theo">Poids habituel / théorique</label>
+                <div class="input-with-unit">
+                  <input type="number" id="nri_poids_theo" value="68" step="0.5" oninput="calcNri()" />
+                  <span class="input-unit">kg</span>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="nri_alb">Albuminémie</label>
+                <div class="input-with-unit">
+                  <input type="number" id="nri_alb" value="32" step="0.5" oninput="calcNri()" />
+                  <span class="input-unit">g/L</span>
+                </div>
+              </div>
+            </div>
+            <div id="res_nri" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Formule de Buzby :</strong> <code>NRI = 1,489 × Albumine (g/L) + 41,7 × (Poids actuel / Poids habituel)</code>.<br />
+              <strong>Seuils :</strong> &gt; 97,5 (ou 98) : pas de risque | 92–98 : risque bas | 82–92 : risque modéré | <strong>&lt; 82 : risque majeur</strong>.
+            </div>
+          </div>
+        </article>
+
+        <!-- NUTRITION 4: Besoins Énergétiques (Harris & Benedict) -->
+        <article class="calc-card" id="card-nutrition-hb" data-specialty="nutrition" data-type="calc" data-keywords="harris benedict metabolisme base depense energetique calories proteines nutrition" style="--card-accent-color: var(--nutri-color); --card-accent-bg: var(--nutri-bg); --card-accent-border: var(--nutri-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🍏 Nutrition</span>
+                <span class="badge-type">Calculateur Métabolique</span>
+              </div>
+              <h2 class="calc-title">Besoins Énergétiques & Protéiques (Harris & Benedict)</h2>
+              <p class="calc-subtitle">Métabolisme de base (MB) et Dépense Énergétique Totale (DET) selon le niveau d’agression</p>
+            </div>
+            <button class="btn-fav" data-id="nutrition-hb" onclick="toggleFavorite('nutrition-hb')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="hb_poids">Poids</label>
+                <div class="input-with-unit">
+                  <input type="number" id="hb_poids" value="70" oninput="calcHarrisBenedict()" />
+                  <span class="input-unit">kg</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="hb_taille">Taille</label>
+                <div class="input-with-unit">
+                  <input type="number" id="hb_taille" value="172" oninput="calcHarrisBenedict()" />
+                  <span class="input-unit">cm</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="hb_age">Âge</label>
+                <div class="input-with-unit">
+                  <input type="number" id="hb_age" value="60" oninput="calcHarrisBenedict()" />
+                  <span class="input-unit">ans</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="hb_sexe">Sexe</label>
+                <select id="hb_sexe" class="form-select" onchange="calcHarrisBenedict()">
+                  <option value="H">Homme</option>
+                  <option value="F">Femme</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="hb_facteur">Facteur d’activité / d’agression métabolique</label>
+                <select id="hb_facteur" class="form-select" onchange="calcHarrisBenedict()">
+                  <option value="1.1">Patient alité calme (× 1,1)</option>
+                  <option value="1.2">Hospitalisé ambulatoire / Sédentaire (× 1,2)</option>
+                  <option value="1.3" selected>Convalescence / Activité légère / Chirurgie non compliquée (× 1,3)</option>
+                  <option value="1.5">Infection sévère / Sepsis / Polytraumatisme / Cancer (× 1,5)</option>
+                  <option value="1.8">Brûlures étendues / Hypercatabolisme majeur (× 1,8)</option>
+                </select>
+              </div>
+            </div>
+            <div id="res_hb" class="result-panel"></div>
+          </div>
+        </article>
+
+        <!-- ===================================================================== -->
+        <!-- 4. MEDECINE INTERNE                                                   -->
+        <!-- ===================================================================== -->
+
+        <!-- MEDINT 1: Calcémie Corrigée (Original) -->
+        <article class="calc-card" id="card-medint-cac" data-specialty="medint" data-type="calc classification" data-keywords="calcemie corrigee calcium albumine hypercalcemie hypocalcemie mmol mg/l" style="--card-accent-color: var(--medint-color); --card-accent-bg: var(--medint-bg); --card-accent-border: var(--medint-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🧬 Médecine interne</span>
+                <span class="badge-type">Calculateur Biologique</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">Calcémie Corrigée (selon l’Albuminémie)</h2>
+              <p class="calc-subtitle">Correction de la calcémie totale par l’albumine (formule de Payne) en mmol/L et mg/L</p>
+            </div>
+            <button class="btn-fav" data-id="medint-cac" onclick="toggleFavorite('medint-cac')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="cac_cam">Calcémie mesurée</label>
+                <div class="input-with-unit">
+                  <input type="number" id="cac_cam" value="2.12" step="0.02" oninput="calcCalcemie()" />
+                  <select id="cac_unit" class="unit-select" onchange="calcCalcemie()">
+                    <option value="mmol" selected>mmol/L</option>
+                    <option value="mgl">mg/L</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cac_alb">Albuminémie</label>
+                <div class="input-with-unit">
+                  <input type="number" id="cac_alb" value="28" step="0.5" oninput="calcCalcemie()" />
+                  <span class="input-unit">g/L</span>
+                </div>
+              </div>
+            </div>
+            <div id="res_cac" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Formule d’origine :</strong> <code>Ca corrigée (mmol/L) = Ca mesurée - 0,025 × (Albumine - 40)</code>.<br />
+              <strong>Valeurs usuelles :</strong> 2,20 à 2,60 mmol/L (88 à 104 mg/L). Hypercalcémie sévère si ≥ 3,50 mmol/L (140 mg/L).
+            </div>
+          </div>
+        </article>
+
+        <!-- MEDINT 2: Trou Anionique Plasmatique & Corrigé -->
+        <article class="calc-card" id="card-medint-ta" data-specialty="medint" data-type="calc classification" data-keywords="trou anionique acidose metabolique bicarbonates chlore sodium figge lactates cetones" style="--card-accent-color: var(--medint-color); --card-accent-bg: var(--medint-bg); --card-accent-border: var(--medint-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🧬 Médecine interne</span>
+                <span class="badge-type">Calculateur & Orientation</span>
+              </div>
+              <h2 class="calc-title">Trou Anionique Plasmatique (Simple & Corrigé par l’Albumine)</h2>
+              <p class="calc-subtitle">Diagnostic étiologique des acidoses métaboliques (formule de Figge)</p>
+            </div>
+            <button class="btn-fav" data-id="medint-ta" onclick="toggleFavorite('medint-ta')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="ta_na">Natrémie (Na⁺)</label>
+                <div class="input-with-unit">
+                  <input type="number" id="ta_na" value="140" oninput="calcTrouAnionique()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ta_cl">Chlorémie (Cl⁻)</label>
+                <div class="input-with-unit">
+                  <input type="number" id="ta_cl" value="104" oninput="calcTrouAnionique()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ta_hco3">Bicarbonates (HCO₃⁻)</label>
+                <div class="input-with-unit">
+                  <input type="number" id="ta_hco3" value="16" oninput="calcTrouAnionique()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ta_k">Kaliémie (K⁺) <span class="hint">optionnel</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="ta_k" value="4.2" step="0.1" oninput="calcTrouAnionique()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="ta_alb">Albumine <span class="hint">correction de Figge</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="ta_alb" value="40" oninput="calcTrouAnionique()" />
+                  <span class="input-unit">g/L</span>
+                </div>
+              </div>
+            </div>
+            <div id="res_ta" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Formule :</strong> <code>TA = [Na⁺] - ([Cl⁻] + [HCO₃⁻])</code> (Normale : 8–16 mmol/L) | <strong>Corrigé (Figge) :</strong> <code>TA + 0,25 × (40 - Alb)</code>.
+            </div>
+          </div>
+        </article>
+
+        <!-- MEDINT 3: Natrémie Corrigée (Katz) & Osmolarité -->
+        <article class="calc-card" id="card-medint-osm" data-specialty="medint" data-type="calc" data-keywords="natremie corrigee katz osmolarite tonicite glycemie hyponatremie hypernatremie" style="--card-accent-color: var(--medint-color); --card-accent-bg: var(--medint-bg); --card-accent-border: var(--medint-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🧬 Médecine interne</span>
+                <span class="badge-type">Calculateur Biologique</span>
+              </div>
+              <h2 class="calc-title">Natrémie Corrigée (Katz) & Osmolarité Plasmatique</h2>
+              <p class="calc-subtitle">Correction de la natrémie en cas d’hyperglycémie et calcul de la tonicité plasmatique</p>
+            </div>
+            <button class="btn-fav" data-id="medint-osm" onclick="toggleFavorite('medint-osm')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="osm_na">Natrémie mesurée</label>
+                <div class="input-with-unit">
+                  <input type="number" id="osm_na" value="131" step="0.5" oninput="calcNatremieOsm()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="osm_gly">Glycémie</label>
+                <div class="input-with-unit">
+                  <input type="number" id="osm_gly" value="22" step="0.5" oninput="calcNatremieOsm()" />
+                  <select id="osm_gly_unit" class="unit-select" onchange="calcNatremieOsm()">
+                    <option value="mmol" selected>mmol/L</option>
+                    <option value="gl">g/L</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="osm_uree">Urée plasmatique <span class="hint">pour osmolarité totale</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="osm_uree" value="7" step="0.5" oninput="calcNatremieOsm()" />
+                  <span class="input-unit">mmol/L</span>
+                </div>
+              </div>
+            </div>
+            <div id="res_osm" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Katz :</strong> <code>Na corrigée = Na + 0,3 × (Glycémie mmol/L - 5,5)</code> | <strong>Tonicité :</strong> <code>2 × Na + Glycémie</code>.
+            </div>
+          </div>
+        </article>
+
+        <!-- MEDINT 4: Score de Child-Pugh -->
+        <article class="calc-card" id="card-medint-childpugh" data-specialty="medint" data-type="score classification" data-keywords="child-pugh child pugh cirrhose foie hepatique ascite encephalopathie bilirubine inr" style="--card-accent-color: var(--medint-color); --card-accent-bg: var(--medint-bg); --card-accent-border: var(--medint-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🧬 Médecine interne</span>
+                <span class="badge-type">Score & Classification</span>
+              </div>
+              <h2 class="calc-title">Score & Classification de Child-Pugh (Cirrhose)</h2>
+              <p class="calc-subtitle">Classification pronostique de la sévérité de l’insuffisance hépatocellulaire (Classes A, B, C)</p>
+            </div>
+            <button class="btn-fav" data-id="medint-childpugh" onclick="toggleFavorite('medint-childpugh')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="cp_bili">Bilirubine totale</label>
+                <select id="cp_bili" class="form-select" onchange="calcChildPugh()">
+                  <option value="1">&lt; 35 µmol/L (&lt; 20 mg/L) [+1]</option>
+                  <option value="2">35 – 50 µmol/L (20–30 mg/L) [+2]</option>
+                  <option value="3">&gt; 50 µmol/L (&gt; 30 mg/L) [+3]</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cp_alb">Albuminémie</label>
+                <select id="cp_alb" class="form-select" onchange="calcChildPugh()">
+                  <option value="1">&gt; 35 g/L [+1]</option>
+                  <option value="2">28 – 35 g/L [+2]</option>
+                  <option value="3">&lt; 28 g/L [+3]</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cp_inr">TP / INR</label>
+                <select id="cp_inr" class="form-select" onchange="calcChildPugh()">
+                  <option value="1">TP &gt; 50% (INR &lt; 1,7) [+1]</option>
+                  <option value="2">TP 40–50% (INR 1,7–2,2) [+2]</option>
+                  <option value="3">TP &lt; 40% (INR &gt; 2,2) [+3]</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cp_ascite">Ascite</label>
+                <select id="cp_ascite" class="form-select" onchange="calcChildPugh()">
+                  <option value="1">Absente [+1]</option>
+                  <option value="2">Modérée / contrôlée par diurétiques [+2]</option>
+                  <option value="3">Abondante / réfractaire [+3]</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="cp_enceph">Encéphalopathie hépatique</label>
+                <select id="cp_enceph" class="form-select" onchange="calcChildPugh()">
+                  <option value="1">Absente [+1]</option>
+                  <option value="2">Stades I–II (astérixis, confusion modérée) [+2]</option>
+                  <option value="3">Stades III–IV (stupeur, coma hépatique) [+3]</option>
+                </select>
+              </div>
+            </div>
+            <div id="res_childpugh" class="result-panel"></div>
+          </div>
+        </article>
+
+        <!-- ===================================================================== -->
+        <!-- 5. PEDIATRIE                                                          -->
+        <!-- ===================================================================== -->
+
+        <!-- PEDIATRIE 1: Formule de Schwartz & Normes par âge (Original) -->
+        <article class="calc-card" id="card-pediatrie-schwartz" data-specialty="pediatrie" data-type="calc classification" data-keywords="schwartz pediatrie dfg enfant nourrisson nouveau-ne premature creatinine" style="--card-accent-color: var(--ped-color); --card-accent-bg: var(--ped-bg); --card-accent-border: var(--ped-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🧸 Pédiatrie</span>
+                <span class="badge-type">Calculateur & Normes par âge</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">Formule de Schwartz (2009) & Normes Pédiatriques</h2>
+              <p class="calc-subtitle">Estimation du DFG chez l’enfant et comparaison aux valeurs de référence par tranche d’âge</p>
+            </div>
+            <button class="btn-fav" data-id="pediatrie-schwartz" onclick="toggleFavorite('pediatrie-schwartz')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="schwartz_taille">Taille de l’enfant</label>
+                <div class="input-with-unit">
+                  <input type="number" id="schwartz_taille" value="115" min="25" max="200" oninput="calcSchwartz()" />
+                  <span class="input-unit">cm</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="schwartz_creat">Créatininémie</label>
+                <div class="input-with-unit">
+                  <input type="number" id="schwartz_creat" value="42" min="5" max="1500" oninput="calcSchwartz()" />
+                  <span class="input-unit">µmol/L</span>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="schwartz_age_group">Tranche d’âge de l’enfant</label>
+                <select id="schwartz_age_group" class="form-select" onchange="calcSchwartz()">
+                  <option value="prema_1w">Prématuré — 1re semaine</option>
+                  <option value="prema_2_8w">Prématuré — 2 à 8 semaines</option>
+                  <option value="prema_2m_2y">Prématuré — 2 mois à 2 ans</option>
+                  <option value="term_1w">Nouveau-né à terme — 1re semaine</option>
+                  <option value="term_2_8w">Nouveau-né à terme — 2 à 8 semaines</option>
+                  <option value="term_2m_2y">Nourrisson — 2 mois à 2 ans</option>
+                  <option value="2_12y" selected>Enfant — 2 à 12 ans</option>
+                  <option value="13_21_m">Adolescent garçon — 13 à 21 ans</option>
+                  <option value="13_21_f">Adolescente fille — 13 à 21 ans</option>
+                </select>
+              </div>
+            </div>
+            <div id="res_schwartz" class="result-panel"></div>
+            <div class="classification-table-wrap">
+              <table class="classification-table">
+                <thead>
+                  <tr>
+                    <th>Catégorie d’âge (normes d’origine)</th>
+                    <th>Valeurs normales de référence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><strong>Prématuré</strong> (1re sem / 2–8 sem / 2m–2 ans)</td><td>15 ± 6 / 29 ± 14 / 51 ± 20</td></tr>
+                  <tr><td><strong>Nouveau-né à terme</strong> (1re sem / 2–8 sem / 2m–2 ans)</td><td>41 ± 15 / 66 ± 25 / 96 ± 22</td></tr>
+                  <tr><td><strong>Enfant 2 à 12 ans</strong></td><td>133 ± 27</td></tr>
+                  <tr><td><strong>Adolescent 13 à 21 ans</strong> (Garçon / Fille)</td><td>Garçon : 140 ± 30 | Fille : 126 ± 22</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <!-- PEDIATRIE 2: Besoins Hydriques de Holliday-Segar (4-2-1) -->
+        <article class="calc-card" id="card-pediatrie-holliday" data-specialty="pediatrie" data-type="calc" data-keywords="holliday segar 4-2-1 hydratation perfusion pediatrie enfant maintenance bolus" style="--card-accent-color: var(--ped-color); --card-accent-bg: var(--ped-bg); --card-accent-border: var(--ped-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🧸 Pédiatrie</span>
+                <span class="badge-type">Calculateur de Perfusion</span>
+              </div>
+              <h2 class="calc-title">Besoins Hydriques de Maintenance (Holliday-Segar 4-2-1)</h2>
+              <p class="calc-subtitle">Calcul des apports hydriques de base par 24h et du débit horaire de perfusion</p>
+            </div>
+            <button class="btn-fav" data-id="pediatrie-holliday" onclick="toggleFavorite('pediatrie-holliday')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label" for="ped_hs_poids">Poids de l’enfant</label>
+                <div class="input-with-unit">
+                  <input type="number" id="ped_hs_poids" value="18" min="1" max="100" step="0.5" oninput="calcHollidaySegar()" />
+                  <span class="input-unit">kg</span>
+                </div>
+              </div>
+            </div>
+            <div id="res_holliday" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Règle 4-2-1 :</strong> De 0 à 10 kg : <code>100 mL/kg/j (4 mL/kg/h)</code> | De 10 à 20 kg : <code>+50 mL/kg/j (+2 mL/kg/h)</code> | &gt; 20 kg : <code>+20 mL/kg/j (+1 mL/kg/h)</code>.
+            </div>
+          </div>
+        </article>
+
+        <!-- PEDIATRIE 3: Score d'Apgar -->
+        <article class="calc-card" id="card-pediatrie-apgar" data-specialty="pediatrie" data-type="score" data-keywords="apgar nouveau-ne naissance salle accouchement vitalite neonatologie" style="--card-accent-color: var(--ped-color); --card-accent-bg: var(--ped-bg); --card-accent-border: var(--ped-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🧸 Pédiatrie</span>
+                <span class="badge-type">Score Néonatal</span>
+              </div>
+              <h2 class="calc-title">Score d’Apgar (Vitalité Néonatale à 1, 5 et 10 min)</h2>
+              <p class="calc-subtitle">Évaluation de l’adaptation à la vie extra-utérine en salle de naissance</p>
+            </div>
+            <button class="btn-fav" data-id="pediatrie-apgar" onclick="toggleFavorite('pediatrie-apgar')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="apgar_fc">Fréquence cardiaque</label>
+                <select id="apgar_fc" class="form-select" onchange="calcApgar()">
+                  <option value="2" selected>≥ 100 bpm (2 pts)</option>
+                  <option value="1">&lt; 100 bpm (1 pt)</option>
+                  <option value="0">Absente / &lt; 60 bpm (0 pt)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="apgar_resp">Mouvements respiratoires</label>
+                <select id="apgar_resp" class="form-select" onchange="calcApgar()">
+                  <option value="2" selected>Cri vigoureux, régulière (2 pts)</option>
+                  <option value="1">Lente, irrégulière, geignement (1 pt)</option>
+                  <option value="0">Absents / Apnée (0 pt)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="apgar_tonus">Tonus musculaire</label>
+                <select id="apgar_tonus" class="form-select" onchange="calcApgar()">
+                  <option value="2" selected>Quadriflexion active, mouvements (2 pts)</option>
+                  <option value="1">Flexion modérée des extrémités (1 pt)</option>
+                  <option value="0">Hypotonie globale / Flasque (0 pt)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="apgar_react">Réactivité à la stimulation</label>
+                <select id="apgar_react" class="form-select" onchange="calcApgar()">
+                  <option value="2" selected>Cri, toux, vive réaction (2 pts)</option>
+                  <option value="1">Grimace, faible mouvement (1 pt)</option>
+                  <option value="0">Aucune réponse (0 pt)</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="apgar_color">Coloration cutanée</label>
+                <select id="apgar_color" class="form-select" onchange="calcApgar()">
+                  <option value="2" selected>Totalement rose (2 pts)</option>
+                  <option value="1">Corps rose, extrémités cyanosées — acrocyanose (1 pt)</option>
+                  <option value="0">Cyanose généralisée ou pâleur extrême (0 pt)</option>
+                </select>
+              </div>
+            </div>
+            <div id="res_apgar" class="result-panel"></div>
+          </div>
+        </article>
+
+        <!-- PEDIATRIE 4: Classification des Constantes Vitales Pédiatriques -->
+        <article class="calc-card" id="card-pediatrie-constantes" data-specialty="pediatrie" data-type="classification" data-keywords="constantes pediatriques frequence cardiaque respiratoire tension arterielle enfant age" style="--card-accent-color: var(--ped-color); --card-accent-bg: var(--ped-bg); --card-accent-border: var(--ped-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">🧸 Pédiatrie</span>
+                <span class="badge-type">Table de Référence</span>
+              </div>
+              <h2 class="calc-title">Classification des Constantes Vitales Pédiatriques par Âge</h2>
+              <p class="calc-subtitle">Normes de fréquence cardiaque, fréquence respiratoire et pression artérielle systolique</p>
+            </div>
+            <button class="btn-fav" data-id="pediatrie-constantes" onclick="toggleFavorite('pediatrie-constantes')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="classification-table-wrap">
+              <table class="classification-table">
+                <thead>
+                  <tr>
+                    <th>Âge</th>
+                    <th>FC éveillé (bpm)</th>
+                    <th>FR (/min)</th>
+                    <th>PAS normale (mmHg)</th>
+                    <th>Seuil Hypotension PAS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><strong>Nouveau-né (0–1 mois)</strong></td><td>100 – 180</td><td>40 – 60</td><td>65 – 85</td><td>&lt; 60 mmHg</td></tr>
+                  <tr><td><strong>Nourrisson (1–12 mois)</strong></td><td>100 – 160</td><td>30 – 50</td><td>80 – 100</td><td>&lt; 70 mmHg</td></tr>
+                  <tr><td><strong>Petit enfant (1–3 ans)</strong></td><td>90 – 150</td><td>24 – 40</td><td>90 – 105</td><td>&lt; 70 + (2 × Âge)</td></tr>
+                  <tr><td><strong>Enfant (4–5 ans)</strong></td><td>80 – 135</td><td>22 – 34</td><td>95 – 110</td><td>&lt; 70 + (2 × Âge)</td></tr>
+                  <tr><td><strong>Enfant (6–12 ans)</strong></td><td>70 – 120</td><td>18 – 30</td><td>100 – 120</td><td>&lt; 70 + (2 × Âge)</td></tr>
+                  <tr><td><strong>Adolescent (&gt; 12 ans)</strong></td><td>60 – 100</td><td>12 – 20</td><td>110 – 130</td><td>&lt; 90 mmHg</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <!-- ===================================================================== -->
+        <!-- 6. REANIMATION & URGENCES                                             -->
+        <!-- ===================================================================== -->
+
+        <!-- REANIMATION 1: Rapport PaO2 / FiO2 & Classification de Berlin (Original) -->
+        <article class="calc-card" id="card-rea-pf" data-specialty="reanima" data-type="calc classification" data-keywords="pao2 fio2 p/f rapport horowitz sdra berlin hypoxemie reanimation gaz du sang" style="--card-accent-color: var(--rea-color); --card-accent-bg: var(--rea-bg); --card-accent-border: var(--rea-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">⚡ Réanimation</span>
+                <span class="badge-type">Calculateur & Classification Berlin</span>
+                <span class="badge-origin">🍅 Outil d’origine</span>
+              </div>
+              <h2 class="calc-title">Rapport PaO₂ / FiO₂ (Horowitz) & Classification de Berlin du SDRA</h2>
+              <p class="calc-subtitle">Quantification de l’hypoxémie et stadification du Syndrome de Détresse Respiratoire Aiguë</p>
+            </div>
+            <button class="btn-fav" data-id="rea-pf" onclick="toggleFavorite('rea-pf')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="pf_pao2">PaO₂ artérielle</label>
+                <div class="input-with-unit">
+                  <input type="number" id="pf_pao2" value="85" min="20" max="650" oninput="calcPf()" />
+                  <span class="input-unit">mmHg</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pf_fio2">FiO₂ inspirée</label>
+                <div class="input-with-unit">
+                  <input type="number" id="pf_fio2" value="50" min="21" max="100" oninput="calcPf()" />
+                  <span class="input-unit">%</span>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="pf_o2flow">Aide : Débit O₂ lunettes <span class="hint">estime FiO₂ ≈ 21% + 4% × L/min</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="pf_o2flow" placeholder="Ex: 4 L/min → 37%" min="0" max="15" step="0.5" oninput="syncFio2FromO2Flow()" />
+                  <span class="input-unit">L/min</span>
+                </div>
+              </div>
+            </div>
+            <div id="res_pf" class="result-panel"></div>
+            <div class="classification-table-wrap">
+              <table class="classification-table" id="berlinTable">
+                <thead>
+                  <tr>
+                    <th>Stade SDRA (Berlin, PEP ≥ 5 cmH₂O)</th>
+                    <th>PaO₂ / FiO₂</th>
+                    <th>Prise en charge ventilatoire clé</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-pf="301-999"><td>Normoxie / Hypoxémie hors SDRA</td><td>&gt; 300 mmHg</td><td>Oxygénothérapie adaptée, traitement étiologique</td></tr>
+                  <tr data-pf="201-300"><td><strong>SDRA Léger</strong></td><td>201 – 300 mmHg</td><td>Ventilation protectrice (Vt 6 mL/kg PBW, Pplat ≤ 30)</td></tr>
+                  <tr data-pf="101-200"><td><strong>SDRA Modéré</strong></td><td>101 – 200 mmHg</td><td>Décubitus Ventral (DV ≥ 16h/j) si P/F &lt; 150 mmHg</td></tr>
+                  <tr data-pf="0-100"><td><strong>SDRA Sévère</strong></td><td>≤ 100 mmHg</td><td>DV + curarisation 48h, discuter VV-ECMO si réfractaire</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <!-- REANIMATION 2: Score de Glasgow (GCS) -->
+        <article class="calc-card" id="card-rea-glasgow" data-specialty="reanima" data-type="score classification" data-keywords="glasgow gcs coma conscience traumatisme cranien intubation neurologie" style="--card-accent-color: var(--rea-color); --card-accent-bg: var(--rea-bg); --card-accent-border: var(--rea-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">⚡ Réanimation</span>
+                <span class="badge-type">Score Neurologique</span>
+              </div>
+              <h2 class="calc-title">Score de Glasgow (GCS) — État de Conscience & Coma</h2>
+              <p class="calc-subtitle">Évaluation neurologique standardisée (Yeux E, Verbal V, Moteur M) sur 15 points</p>
+            </div>
+            <button class="btn-fav" data-id="rea-glasgow" onclick="toggleFavorite('rea-glasgow')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label" for="gcs_e">Ouverture des Yeux (E1 à E4)</label>
+                <select id="gcs_e" class="form-select" onchange="calcGlasgow()">
+                  <option value="4" selected>E4 — Spontanée (+4)</option>
+                  <option value="3">E3 — À la demande / au bruit (+3)</option>
+                  <option value="2">E2 — À la stimulation douloureuse (+2)</option>
+                  <option value="1">E1 — Aucune ouverture des yeux (+1)</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="gcs_v">Réponse Verbale (V1 à V5)</label>
+                <select id="gcs_v" class="form-select" onchange="calcGlasgow()">
+                  <option value="5" selected>V5 — Orientée, cohérente (+5)</option>
+                  <option value="4">V4 — Confuse, désorientée (+4)</option>
+                  <option value="3">V3 — Mots inappropriés / incohérents (+3)</option>
+                  <option value="2">V2 — Sons incompréhensibles / grognements (+2)</option>
+                  <option value="1">V1 — Aucune réponse verbale (+1)</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="gcs_m">Réponse Motrice (M1 à M6)</label>
+                <select id="gcs_m" class="form-select" onchange="calcGlasgow()">
+                  <option value="6" selected>M6 — Obéit aux ordres simples (+6)</option>
+                  <option value="5">M5 — Orientée vers la douleur / chasse la douleur (+5)</option>
+                  <option value="4">M4 — Évitement / retrait en flexion normale (+4)</option>
+                  <option value="3">M3 — Flexion stéréotypée (décortication) (+3)</option>
+                  <option value="2">M2 — Extension stéréotypée (décérébration) (+2)</option>
+                  <option value="1">M1 — Aucune réponse motrice (+1)</option>
+                </select>
+              </div>
+            </div>
+            <div id="res_glasgow" class="result-panel"></div>
+            <div class="formula-box">
+              <strong>Classification :</strong> GCS 13–15 : TC léger | GCS 9–12 : TC modéré | <strong>GCS ≤ 8 : Coma / TC grave</strong> (intubation pour protection des voies aériennes).
+            </div>
+          </div>
+        </article>
+
+        <!-- REANIMATION 3: Score qSOFA -->
+        <article class="calc-card" id="card-rea-qsofa" data-specialty="reanima" data-type="score" data-keywords="qsofa sofa sepsis choc septique infection urgences hypotension tachypnee" style="--card-accent-color: var(--rea-color); --card-accent-bg: var(--rea-bg); --card-accent-border: var(--rea-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">⚡ Réanimation</span>
+                <span class="badge-type">Score de Dépistage</span>
+              </div>
+              <h2 class="calc-title">Score qSOFA (Quick SOFA — Sepsis-3)</h2>
+              <p class="calc-subtitle">Identification rapide au lit du malade des patients infectés à risque de gravité</p>
+            </div>
+            <button class="btn-fav" data-id="rea-qsofa" onclick="toggleFavorite('rea-qsofa')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="criteria-list">
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" onchange="calcQsofa()" /> Fréquence respiratoire ≥ 22 cycles / min</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" onchange="calcQsofa()" /> Altération de l’état neurologique (Confusion aiguë / Score de Glasgow &lt; 15)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" onchange="calcQsofa()" /> Pression Artérielle Systolique (PAS) ≤ 100 mmHg</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+            </div>
+            <div id="res_qsofa" class="result-panel"></div>
+          </div>
+        </article>
+
+        <!-- REANIMATION 4: Score CURB-65 -->
+        <article class="calc-card" id="card-rea-curb65" data-specialty="reanima" data-type="score" data-keywords="curb-65 curb65 crb65 pneumonie pneumopathie infectiologie hospitalisation" style="--card-accent-color: var(--rea-color); --card-accent-bg: var(--rea-bg); --card-accent-border: var(--rea-border);">
+          <div class="calc-card-header">
+            <div class="calc-header-left">
+              <div class="calc-badges">
+                <span class="badge-specialty">⚡ Réanimation</span>
+                <span class="badge-type">Score d’Orientation</span>
+              </div>
+              <h2 class="calc-title">Score CURB-65 (Pneumopathie Aiguë Communautaire)</h2>
+              <p class="calc-subtitle">Évaluation de la gravité d’une PAC et aide à la décision d’hospitalisation</p>
+            </div>
+            <button class="btn-fav" data-id="rea-curb65" onclick="toggleFavorite('rea-curb65')">☆</button>
+          </div>
+          <div class="calc-card-body">
+            <div class="criteria-list">
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" onchange="calcCurb65()" /> <strong>C</strong> — Confusion aiguë (désorientation temporo-spatiale)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" onchange="calcCurb65()" /> <strong>U</strong> — Urée sanguine &gt; 7 mmol/L (0,42 g/L)</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" onchange="calcCurb65()" /> <strong>R</strong> — Fréquence Respiratoire ≥ 30 / min</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" onchange="calcCurb65()" /> <strong>B</strong> — Pression Artérielle : PAS &lt; 90 mmHg ou PAD ≤ 60 mmHg</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+              <label class="criteria-item">
+                <span class="criteria-left"><input type="checkbox" id="curb_age" onchange="calcCurb65()" /> <strong>65</strong> — Âge ≥ 65 ans</span>
+                <span class="criteria-points">+1 pt</span>
+              </label>
+            </div>
+            <div id="res_curb65" class="result-panel"></div>
+          </div>
+        </article>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ======================= FOOTER ======================= -->
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>TomatoCalc.</strong> — Outil d’aide au calcul médical, scores cliniques et classifications de référence.
+      </div>
+      <div class="footer-links">
+        <a href="original.html">🕰️ Accéder au code d’origine (2019)</a>
+        <a href="compteur/choice.html">✈️ Mentions légales (Easter egg d’origine)</a>
+        <a href="Holidamn/index.html">🎬 Holidamn</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="toast-notification"></div>
+
+  <script src="app.js"></script>
 </body>
-
-<center> <a class = "button" id="comtpeur" href="compteur/choice.html"> Mentions légales</a> </center> 
-
 </html>

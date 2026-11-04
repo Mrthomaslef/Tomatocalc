@@ -1886,4 +1886,19 @@ document.addEventListener('DOMContentLoaded', () => {
   renderClipboard();
   runAllCalculations();
   renderNavigationAndCards();
+
+  // Défilement horizontal fluide à la molette ou au trackpad sur les onglets et tableaux
+  (function initDesktopWheelScroll() {
+    window.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || e.metaKey) return;
+      const dy = e.deltaY || 0;
+      const dx = e.deltaX || 0;
+      if (!dy && !dx) return;
+      const horiz = e.target && e.target.closest ? e.target.closest('.category-tabs, .sub-tabs, .pills-row') : null;
+      if (horiz && horiz.scrollWidth > horiz.clientWidth && Math.abs(dy) > Math.abs(dx)) {
+        horiz.scrollLeft += dy;
+        e.preventDefault();
+      }
+    }, { passive: false });
+  })();
 });
